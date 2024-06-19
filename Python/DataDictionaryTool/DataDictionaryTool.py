@@ -156,10 +156,31 @@ def run_tool():
             print(f"  Warning: Zero Column descriptions were added. Please check the description file to make sure it contains valid data.")
     else:
         print("Adding empty Description column to Tables and Glossary tabs...")
-        glossary = glossary.reindex(columns = glossary.columns.tolist() + ['Description'])
         glossary = glossary.reindex(columns = glossary.columns.tolist() + ['Friendly Name'])
+        glossary = glossary.reindex(columns = glossary.columns.tolist() + ['Description'])
         includedTables = includedTables.reindex(columns = includedTables.columns.tolist() + ['Description'])
 
+
+    def reorder_dataframe_columns(df, column_order):
+        """
+        Reorder the columns of a DataFrame according to a given list.
+        
+        Parameters:
+        - df: Pandas DataFrame to be reordered.
+        - column_order: List of column names in the desired order.
+        
+        Returns:
+        - DataFrame with columns in the specified order if all columns are found,
+        otherwise returns the original DataFrame unchanged.
+        """
+        # Check if all columns in column_order are in the DataFrame
+        if not all(column in df.columns for column in column_order):
+            # If not all column names are present, print a warning and return the original DataFrame
+            print("Warning: Not all columns in the provided column order list are in the DataFrame.  Column order is unchanged.")
+            return df
+        else:
+            # All columns are present, so reorder and return the new DataFrame
+            return df[column_order]
 
 
     # Table Formatting Methods
@@ -251,6 +272,11 @@ def run_tool():
         return aboutDf
 
 
+    #Reorder columns in the Glossary.
+    new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
+                     'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'Friendly Name', 'Description']
+    glossary = reorder_dataframe_columns(glossary, new_col_order)
 
     # Create Data Dictionary Excel file
     print(f"Writing Data Dictionary Excel file: {dataDictionaryFile}")
