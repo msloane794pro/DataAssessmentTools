@@ -23,10 +23,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.05.20 03:26:34'
-featureBinding_tableSpecTabs = False 
-ai_model_base_url='https://api.hpc.inl.gov/llm/v1'
-ai_model_api_key='5mdim-8qu4h-pq2g7-ivhl6-memyi'
+dateLastUpdated = '2024.06.19 03:26:34'
 
 
 
@@ -164,34 +161,6 @@ def run_tool():
         includedTables = includedTables.reindex(columns = includedTables.columns.tolist() + ['Description'])
 
 
-    #TBD
-
-    # Create a dictionary of Data Frames, one for each Table
-    # 
-    # #TODO create actual SQL dataString
-    
-    if featureBinding_tableSpecTabs:
-        tableDataFrames = {}
-        ## TODO: Make sure stat columns are named 'Min Value' and 'Max Value'
-        print("Creating table specific SQL data...")
-        for ind1 in tableList.index:
-            tableName = tableList['TableName'][ind1]
-            
-            print(f"  {tableName}")
-            sqlString1 = 'CREATE UNIQUE INDEX BASE.{} ON BASE.{}\n({})'.format("___insert_???_here___", tableName,"___insert_PK?_here___")
-            sqlString2 = 'CREATE TABLE BASE.{}\n(\n'.format(tableName)
-
-            for ind2 in glossary.index:
-                if glossary['TABLENAME'][ind2] == tableName: 
-                    sqlString2 = sqlString2 + '  {} {} NOT NULL\n'.format(glossary['COLNAME'][ind2], glossary['TYPE'][ind2])
-            sqlString2 = sqlString2 + ')'
-            df = pd.DataFrame(columns=['SQL'])
-            df.loc[len(df.index)] = [sqlString1]
-            df.loc[len(df.index)] = [sqlString2]
-            tableDataFrames['Table ' + tableName] = df 
-
-        print("Done creating table specific data.")
-
 
     # Table Formatting Methods
     def formatMinMax(worksheet):
@@ -255,8 +224,6 @@ def run_tool():
             formatMinMax(theWriter.sheets[sheetName])
         if sheetName == 'Glossary':
             filterAndFreeze(theWriter.sheets[sheetName])
-        if featureBinding_tableSpecTabs and sheetName == 'Tables':
-            addLinks(theWriter.sheets[sheetName], df)
         addFormatedHeader(theWriter.sheets[sheetName], df, header_format)
 
     def filterAndFreeze (worksheet):
@@ -307,16 +274,6 @@ def run_tool():
 
     createFormattedSheet(writer, includedTables, 'Tables')
     createFormattedSheet(writer, glossary, 'Glossary')
-    
-    if featureBinding_tableSpecTabs:
-        for dfName in tableDataFrames:
-            print(f"  {dfName}")
-            df = tableDataFrames[dfName]
-            name = dfName[:31]
-            df.to_excel(writer, sheet_name=name, index=False)
-            max_row = df.shape[0]+1
-            writer.sheets[name].write_url('A'+str(max_row+1), "internal:'Tables'!A1:A1", string="Tables")
-
     createFormattedSheet(writer, tableList, '_Full Table List')
     createFormattedSheet(writer, excludedTables, '_Excluded Tables')
     createFormattedSheet(writer, tableCharacteristics, '_rawTableChars')
@@ -343,9 +300,9 @@ if __name__ == '__main__':
                 Additional information:
                     Simple operation: Use database parameter only. 
                         Use this when the input files follow the naming convention
-                            <database>_RawListOfTables.xlsx
-                            <database>_RawTableChars.xlsx      
-                            <database>_RawColumnStats*.xlsx
+                            <database>_ListOfTables.xlsx
+                            <database>_TableChars.xlsx      
+                            <database>_ColumnStats*.xlsx
                         Output file created: <database>_DataDictionary_working.xlsx
                     Custom operation: 
                         Specify file name parameters when naming convention is not followed. 
@@ -386,9 +343,9 @@ if __name__ == '__main__':
 
         #Option#
         if args.database is not None:
-            tableListFile = args.database + '_RawListOfTables.xlsx'
-            tableCharsFile = args.database + '_RawTableChars.xlsx'
-            columnStatsFiles = glob.glob(args.database + '_RawColumnStats*.xlsx')
+            tableListFile = args.database + '_ListOfTables.xlsx'
+            tableCharsFile = args.database + '_TableChars.xlsx'
+            columnStatsFiles = glob.glob(args.database + '_ColumnStats*.xlsx')
             tableDescriptionFile = args.database + '_Descriptions.xlsx'
             dataDictionaryFile = args.database + '_DataDictionary_working.xlsx'
         else:
@@ -398,7 +355,7 @@ if __name__ == '__main__':
 
         if len(columnStatsFiles) <= 0:
             errorMessage = "\nError finding columnStats file(s).  Check file names against database param value ({}).".format(args.database)
-            errorMessage += "\nNo files matching {}_RawColumnStats*.xlsx were found.".format(args.database)
+            errorMessage += "\nNo files matching {}_ColumnStats*.xlsx were found.".format(args.database)
 
         if not os.path.isfile(tableListFile):
             errorMessage += "\nError: Table List File {} is not found.".format(tableListFile)
