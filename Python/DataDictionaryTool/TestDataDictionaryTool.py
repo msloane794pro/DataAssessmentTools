@@ -656,14 +656,14 @@ def customizeTestFileNames():
     for i, group in enumerate(testFileGroups):
         #tprint(f'{i} - Test file group: {group}')
         for file in glob.glob(f'{pwd}/{group}*.xlsx'):
-            if 'RawColumnStats' in str(file):
-                newFile = file.replace('RawColumnStats', 'RCS')   
+            if 'ColumnStats' in str(file):
+                newFile = file.replace('ColumnStats', 'RCS')   
                 os.rename(file, newFile)            
-            elif 'RawListOfTables' in str(file):
-                newFile = file.replace('RawListOfTables', 'RLOT')
+            elif 'ListOfTables' in str(file):
+                newFile = file.replace('ListOfTables', 'RLOT')
                 os.rename(file, newFile)
-            elif 'RawTableChars' in str(file):
-                newFile = file.replace('RawTableChars', 'RTC')
+            elif 'TableChars' in str(file):
+                newFile = file.replace('TableChars', 'RTC')
                 os.rename(file, newFile)
             elif 'Descriptions' in str(file):
                 newFile = file.replace('Descriptions', 'Ignore')
