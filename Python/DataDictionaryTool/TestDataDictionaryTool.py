@@ -126,7 +126,9 @@ def validateGlossaryColumns(valId):
     expectedOutputFile = f'{testFileGroups[0]}_DataDictionary_working.xlsx'
     observedDf = pd.read_excel(expectedOutputFile, sheet_name='Glossary', dtype=str, keep_default_na=False)
 
-    expectedCols = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 'Friendly Name', 'Description']
+    expectedCols = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
+                    'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column',
+                    'Friendly Name', 'Description']
 
     assertEquals(expectedCols[0], observedDf.columns[0], valId)
     assertEquals(expectedCols[1], observedDf.columns[1], valId)
@@ -638,6 +640,16 @@ def validateGlossaryValuesSparse(valId):
     assertEquals('', observedDf["Max Length"][0], str(f'{valId} - ["Max Length"][0]'))
     assertEquals('11', observedDf["Max Length"][187], str(f'{valId} - ["Max Length"][187]'))
     assertEquals('28', observedDf["Max Length"][237], str(f'{valId} - ["Max Length"][237]'))
+
+    assertEquals('False', observedDf["IsPrimaryKey"][0], str(f'{valId} - ["IsPrimaryKey"][0]'))
+    assertEquals('True', observedDf["IsPrimaryKey"][35], str(f'{valId} - ["IsPrimaryKey"][35]'))
+    assertEquals('True', observedDf["IsPrimaryKey"][36], str(f'{valId} - ["IsPrimaryKey"][36]'))
+    assertEquals('True', observedDf["IsPrimaryKey"][37], str(f'{valId} - ["IsPrimaryKey"][37]'))
+    assertEquals('True', observedDf["IsForeignKey"][0], str(f'{valId} - ["IsForeignKey"][0]'))
+    assertEquals('False', observedDf["IsForeignKey"][1], str(f'{valId} - ["IsForeignKey"][1]'))
+    assertEquals('Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here.', observedDf["Notes"][193], str(f'{valId} - ["Notes"][193]'))
+    assertEquals('Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here.', observedDf["Notes"][187], str(f'{valId} - ["Notes"][187]'))
+
     assertEquals('Room Category', observedDf["Friendly Name"][235], str(f'{valId} - ["Friendly Name"][235]'))
     assertEquals('Employee Count', observedDf["Friendly Name"][85], str(f'{valId} - ["Friendly Name"][85]'))    
     assertEquals('Survey Photo for table rTable', observedDf["Description"][245], str(f'{valId} - ["Description"][245]'))
