@@ -16,19 +16,19 @@ SELECT
                WHEN tp.[name] IN ('decimal', 'numeric') THEN CAST(c.[precision] AS VARCHAR(25)) + ', ' + CAST(c.[scale] AS VARCHAR(25))
                WHEN tp.[name] IN ('datetime2') THEN CAST(c.[scale] AS VARCHAR(25))
              END,
-  [IsPrimaryKey] = CAST(
-    CASE WHEN ic.column_id IS NOT NULL AND i.is_primary_key = 1 THEN 1
-         ELSE 0 
-    END AS BIT),
-  [PK_name] = CASE WHEN i.is_primary_key = 1 THEN kc.[name] ELSE NULL END,
-  [PK_ordinal_position] = CASE WHEN i.is_primary_key = 1 THEN ic.key_ordinal ELSE NULL END,
-  [IsForeignKey] = CAST(
-    CASE WHEN fkc.parent_column_id IS NOT NULL THEN 1
-         ELSE 0 
-    END AS BIT),
-  [FK_name] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN fk.[name] ELSE NULL END,
-  [FK_referenced_table] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN OBJECT_NAME(fk.referenced_object_id) ELSE NULL END,
-  [FK_referenced_column] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN COL_NAME(fk.referenced_object_id, fkc.referenced_column_id) ELSE NULL END
+  [IsPrimaryKey] = CASE 
+                     WHEN ic.column_id IS NOT NULL AND i.is_primary_key = 1 THEN 'True'
+                     ELSE 'False' 
+                   END,
+  [PK_name] = CASE WHEN i.is_primary_key = 1 THEN kc.[name] ELSE '' END,
+  [PK_ordinal_position] = CASE WHEN i.is_primary_key = 1 THEN ic.key_ordinal ELSE 0 END,
+  [IsForeignKey] = CASE 
+                     WHEN fkc.parent_column_id IS NOT NULL THEN 'True'
+                     ELSE 'False' 
+                   END,
+  [FK_name] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN fk.[name] ELSE '' END,
+  [FK_referenced_table] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN OBJECT_NAME(fk.referenced_object_id) ELSE '' END,
+  [FK_referenced_column] = CASE WHEN fkc.parent_column_id IS NOT NULL THEN COL_NAME(fk.referenced_object_id, fkc.referenced_column_id) ELSE '' END
 FROM sys.tables t
 JOIN sys.schemas s ON t.schema_id = s.schema_id
 JOIN sys.columns c ON t.object_id = c.object_id
@@ -39,6 +39,7 @@ LEFT JOIN sys.key_constraints kc ON kc.parent_object_id = t.object_id AND kc.typ
 LEFT JOIN sys.foreign_key_columns fkc ON fkc.parent_object_id = t.object_id AND fkc.parent_column_id = c.column_id
 LEFT JOIN sys.foreign_keys fk ON fk.object_id = fkc.constraint_object_id
 
+-- List tables here if the analysis is to be restricted to only certain tables.
 -- List tables here if the analysis is to be restricted to only certain tables.
 /*
 WHERE t.[name] in (
