@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.06.19 03:26:34'
+dateLastUpdated = '2024.06.28 03:26:34'
 
 
 
@@ -328,9 +328,13 @@ def run_tool():
     
 
     print("Performing analysis on Glossary data...")
+
+    fixed_string = 'Y'
+    glossary['IncludeInView'] = 'Y'
+
     #Reorder columns in the Glossary.
     new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                     'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
                      'Friendly Name', 'Description']
     glossary = reorder_dataframe_columns(glossary, new_col_order)
 
