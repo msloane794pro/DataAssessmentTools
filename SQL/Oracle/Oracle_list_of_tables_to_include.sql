@@ -1,13 +1,24 @@
-SELECT DISTINCT
-    t.TABLE_NAME AS "TableName", 
-    (SELECT COUNT(*) FROM ALL_TAB_COLUMNS c WHERE c.TABLE_NAME = t.TABLE_NAME) AS "NumberOfColumns",
-    NVL(tt.NUM_ROWS, 0) AS "NumberOfRows",
+SELECT 
+    at.table_name AS "TableName",
+    COUNT(ac.column_name) AS "NumberOfColumns",
+    at.num_rows AS "NumberOfRows",
     CASE 
-        WHEN NVL(tt.NUM_ROWS, 0) = 0 
-        THEN '0' 
-        ELSE '1' 
+        WHEN at.num_rows > 0 THEN '1'
+        ELSE '0'
     END AS "Include"
-FROM ALL_TAB_COLUMNS t
-JOIN DBA_TABLES tt ON t.TABLE_NAME = tt.TABLE_NAME
-WHERE t.OWNER = 'DRAWING' 
-ORDER BY "Include" desc, t.TABLE_NAME;
+FROM 
+    all_tab_columns ac
+JOIN 
+    all_tables at
+ON 
+    ac.table_name = at.table_name 
+    AND ac.owner = at.owner
+WHERE 
+    at.owner = 'TRAIN' -- Edit Schema name as needed.
+    AND at.num_rows IS NOT NULL
+GROUP BY 
+    at.table_name,
+    at.num_rows
+ORDER BY 
+    "Include" DESC,
+    at.table_name;
