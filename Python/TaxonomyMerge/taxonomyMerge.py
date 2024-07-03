@@ -6,10 +6,11 @@ import os
 import shutil
 from datetime import datetime
 import time
+import glob
 
 
 # Constants
-TAXONOMY_FILE = "TheBigTaxonomyFile.xlsx"
+TAXONOMY_FILE = "CentralTaxonomyFile.xlsx"
 TAXONOMY_GLOSSARY = "Taxonomy Glossary"
 ARCHIVE_DIR = "Archive"
 
@@ -29,7 +30,7 @@ def runInitialMerge(initialMergeFile):
 
 
 def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
-    print(f'Running merge:  Domain: {domainVal}, Application: {appVal}, Module: {moduleVal}, Data Dictionary file: {ddFile}, Glossary Tab: {glossaryTab}')
+    print(f'Running merge:  {domainVal} - {appVal} - {moduleVal}, Data Dictionary file: {ddFile}, Glossary Tab: {glossaryTab}')
 
     create_backup_file(TAXONOMY_FILE)
 
@@ -44,13 +45,12 @@ def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
     
     updatedTaxonomy_df = append_dataframes(glossary_df, taxonomy_df)
 
-    print(f'...Row counts: Current: {len(taxonomy_df)}, Additional: {len(glossary_df)}, New: {len(updatedTaxonomy_df)}')
-
     with pd.ExcelWriter(TAXONOMY_FILE, engine='openpyxl') as writer:
         updatedTaxonomy_df.to_excel(writer, sheet_name=TAXONOMY_GLOSSARY, index=False)
 
     save_file_with_timestamp(TAXONOMY_FILE, ARCHIVE_DIR)
-
+    
+    print(f'...{TAXONOMY_FILE} saved. {len(glossary_df)} rows added')
 
 def append_dataframes(newDataDf, mainDf):
     # Concatenate newDataDf to mainDf and return the resulting dataframe
@@ -105,7 +105,7 @@ def save_file_with_timestamp(fileName, directoryName):
     # Ensure the directory exists
     if not os.path.exists(directoryName):
         os.makedirs(directoryName)
-        print(f"The directory {directoryName} was created.")
+        #print(f"The directory {directoryName} was created.")
 
     # Extract file name and extension
     base_name, file_extension = os.path.splitext(fileName)
@@ -125,8 +125,8 @@ def save_file_with_timestamp(fileName, directoryName):
         shutil.copy2(fileName, new_file_path)
         #print(f"File move to {new_file_path}")
         
-    else:
-        print(f"The file {fileName} does not exist.")
+    #else:
+        #print(f"The file {fileName} does not exist.")
 
 
 def create_backup_file(fileName):
@@ -148,8 +148,8 @@ def create_backup_file(fileName):
         # Copy the file to create a backup
         shutil.copy2(fileName, backup_file_path)
         #print(f"Backup created as {backup_file_path}")
-    else:
-        print(f"The file {fileName} does not exist.")
+    # else:
+    #     print(f"The file {fileName} does not exist.")
 
 
 # Check if a file is open in Excel
@@ -205,8 +205,27 @@ def process_initialMerge_file(fileName):
     for index, row in df.iterrows():
         # Call the runMerge() method with row values as parameters
         runMerge(row['Domain'], row['Application'], row['Module'], row['Data Dictionary File'], row['GlossaryTab'])
-        time.sleep(1.5)
+        time.sleep(1.1)
 
+
+def delete_backup_files(directory):
+    # Construct the search pattern to find all files that contain '_bak'
+    search_pattern = os.path.join(directory, '*_bak*')
+
+    # Use glob to find all files that match the pattern
+    backup_files = glob.glob(search_pattern)
+
+    # If no backup files found, return without doing anything
+    if not backup_files:
+        return
+
+    # Iterate over the list of backup files and delete them
+    for file_path in backup_files:
+        try:
+            os.remove(file_path)
+            #print(f"Deleted file: {file_path}")
+        except OSError as e:
+            print(f"Error deleting backup file: {file_path}. Reason: {e}")
 
 
 def main():
@@ -250,6 +269,10 @@ def main():
 
     else:
         parser.error('Either initialFile or datadictionaryFile must be provided.')
+
+    delete_backup_files(".")
+
+    print("Done.\n")
 
 
 
