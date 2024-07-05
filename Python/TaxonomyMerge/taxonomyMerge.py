@@ -41,12 +41,12 @@ def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
     glossary_df.insert(0, 'Application', appVal)
     glossary_df.insert(0, 'Domain', domainVal)
     
-    cleanUpGlossary(glossary_df)
+    cleanedUpGlossary_df = cleanUpGlossary(glossary_df)
 
-    updatedTaxonomy_df = append_dataframes(glossary_df, taxonomy_df)
+    updatedTaxonomy_df = append_dataframes(cleanedUpGlossary_df, taxonomy_df)
+    cleanedUpTaxonomy = cleanUpTaxonomy(updatedTaxonomy_df)
     
-
-    writeFormattedExcelFile(updatedTaxonomy_df, TAXONOMY_FILE, TAXONOMY_GLOSSARY)
+    writeFormattedExcelFile(cleanedUpTaxonomy, TAXONOMY_FILE, TAXONOMY_GLOSSARY)
     save_file_with_timestamp(TAXONOMY_FILE, ARCHIVE_DIR)
     print(f'...{TAXONOMY_FILE} saved. {len(glossary_df)} rows added')
 
@@ -290,6 +290,7 @@ def formatMinMax(worksheet, sheet_vals, dateFormat, datetimeFormat, numberFormat
                                 "format": numberFormat
                                 })
 
+
 def createFormattedSheet(theWriter, df, sheetName, sheet_vals, dateFormat, datetimeFormat, numberFormat,header_format):
     # store location values from df
     sheet_vals[sheetName+'_max_rows'] = df.shape[0]-1
@@ -333,9 +334,18 @@ def addFormatedHeader(worksheet, df, hdr_format):
 def cleanUpGlossary(dataframe):
     if "IncludeInView" not in dataframe.columns:
         dataframe.insert(11, 'IncludeInView', "Y")
-    trim_text_column(dataframe, "Friendly Name")
-    trim_text_column(dataframe, "Description")
-    trim_text_column(dataframe, "Notes")
+    dataframe = trim_text_column(dataframe, "Friendly Name")
+    dataframe = trim_text_column(dataframe, "Description")
+    dataframe = trim_text_column(dataframe, "Notes")
+
+    return dataframe
+
+
+def cleanUpTaxonomy(dataframe):
+    update_boolean_text_column(dataframe, 'IsPrimaryKey')
+    update_boolean_text_column(dataframe, 'IsForeignKey')
+
+    return dataframe
 
 
 def trim_text_column(dataframe, column_name):
@@ -355,6 +365,18 @@ def trim_text_column(dataframe, column_name):
 
     return dataframe
 
+def update_boolean_text_column(dataframe, column_name):
+    #print(f'Before:{dataframe}')
+    dataframe[column_name] = dataframe[column_name].map({
+        True: 'TRUE',    False: 'FALSE', 
+        1: 'TRUE',       0: 'FALSE', 
+        'True': 'TRUE',  'False': 'FALSE',
+        '1': 'TRUE',     '0': 'FALSE', 
+        None: ""
+        })
+    #print(f'After:{dataframe}')
+
+    return dataframe
 
 def main():
     # Create the argument parser
