@@ -45,12 +45,10 @@ def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
     
     updatedTaxonomy_df = append_dataframes(glossary_df, taxonomy_df)
 
-    with pd.ExcelWriter(TAXONOMY_FILE, engine='openpyxl') as writer:
-        updatedTaxonomy_df.to_excel(writer, sheet_name=TAXONOMY_GLOSSARY, index=False)
-
+    writeFormattedExcelFile(updatedTaxonomy_df, TAXONOMY_FILE, TAXONOMY_GLOSSARY)
     save_file_with_timestamp(TAXONOMY_FILE, ARCHIVE_DIR)
-    
     print(f'...{TAXONOMY_FILE} saved. {len(glossary_df)} rows added')
+
 
 def append_dataframes(newDataDf, mainDf):
     # Concatenate newDataDf to mainDf and return the resulting dataframe
@@ -59,6 +57,7 @@ def append_dataframes(newDataDf, mainDf):
         return resultDf
     else:
         return newDataDf
+
 
 def validate_glossary_columns(df):
     required_columns = ["Domain", "Application", "Module",
@@ -226,6 +225,108 @@ def delete_backup_files(directory):
             #print(f"Deleted file: {file_path}")
         except OSError as e:
             print(f"Error deleting backup file: {file_path}. Reason: {e}")
+
+
+def writeFormattedExcelFile(df, fileName, tabName):
+    print(f"Writing Formatted Taxonomy Excel file: {fileName}")
+    writer = pd.ExcelWriter(fileName)
+    workbook = writer.book
+    sheet_vals = {}
+    dateFormat = workbook.add_format()
+    dateFormat.set_num_format('mm/dd/yy')
+    datetimeFormat = workbook.add_format()
+    datetimeFormat.set_num_format('mm/dd/yy hh:mm')
+    numberFormat = workbook.add_format()
+    numberFormat.set_num_format('###,###,###,##0;-###,###,###,##0')
+    header_format = workbook.add_format({
+        'bg_color': '#0070C0',  
+        'font_color': '#FFFFFF',
+        'bold': True,           
+        'text_wrap': False,
+        'valign': 'top',
+        'align': 'center',
+        'border': 1})
+
+    createFormattedSheet(writer, df, tabName, sheet_vals, dateFormat, datetimeFormat, numberFormat, header_format)
+    writer.close()
+
+
+# Table Formatting Methods
+def formatMinMax(worksheet, sheet_vals, dateFormat, datetimeFormat, numberFormat):
+    name = worksheet.get_name()
+    date_criterion = '=(${}2:${}{}="date")'.format(sheet_vals[name+'_type_colLetter'],sheet_vals[name+'_type_colLetter'],str(sheet_vals[name+'_max_rows']))
+    datetime_criterion = '=(SEARCH("datetime",${}2:${}{})>0)'.format(sheet_vals[name+'_type_colLetter'],sheet_vals[name+'_type_colLetter'],str(sheet_vals[name+'_max_rows']))
+    numeric_criterion = '=(SEARCH("numeric",${}2:${}{})>0)'.format(sheet_vals[name+'_type_colLetter'],sheet_vals[name+'_type_colLetter'],str(sheet_vals[name+'_max_rows']))
+    int_criterion = '=(SEARCH("int",${}2:${}{})>0)'.format(sheet_vals[name+'_type_colLetter'],sheet_vals[name+'_type_colLetter'],str(sheet_vals[name+'_max_rows']))
+    float_criterion = '=(SEARCH("float",${}2:${}{})>0)'.format(sheet_vals[name+'_type_colLetter'],sheet_vals[name+'_type_colLetter'],str(sheet_vals[name+'_max_rows']))
+    worksheet.conditional_format(1, sheet_vals[name+'_minVal_colNum'], sheet_vals[name+'_max_rows'], sheet_vals[name+'_maxVal_colNum'], 
+                                {"type": "formula",
+                                "criteria": date_criterion,
+                                "format": dateFormat
+                                })
+
+    worksheet.conditional_format(1, sheet_vals[name+'_minVal_colNum'], sheet_vals[name+'_max_rows'], sheet_vals[name+'_maxVal_colNum'], 
+                                {"type": "formula",
+                                "criteria": datetime_criterion,
+                                "format": datetimeFormat
+                                })
+
+    worksheet.conditional_format(1, sheet_vals[name+'_minVal_colNum'], sheet_vals[name+'_max_rows'], sheet_vals[name+'_maxVal_colNum'], 
+                                {"type": "formula",
+                                "criteria": numeric_criterion,
+                                "format": numberFormat
+                                })
+
+    worksheet.conditional_format(1, sheet_vals[name+'_minVal_colNum'], sheet_vals[name+'_max_rows'], sheet_vals[name+'_maxVal_colNum'], 
+                                {"type": "formula",
+                                "criteria": int_criterion,
+                                "format": numberFormat
+                                })
+
+    worksheet.conditional_format(1, sheet_vals[name+'_minVal_colNum'], sheet_vals[name+'_max_rows'], sheet_vals[name+'_maxVal_colNum'], 
+                                {"type": "formula",
+                                "criteria": float_criterion,
+                                "format": numberFormat
+                                })
+
+def createFormattedSheet(theWriter, df, sheetName, sheet_vals, dateFormat, datetimeFormat, numberFormat,header_format):
+    # store location values from df
+    sheet_vals[sheetName+'_max_rows'] = df.shape[0]-1
+    sheet_vals[sheetName+'_max_cols'] = df.shape[1]-1
+    if 'Min Value' in df.columns:
+        sheet_vals[sheetName+'_minVal_colNum'] = df.columns.get_loc('Min Value')
+        sheet_vals[sheetName+'_maxVal_colNum'] = df.columns.get_loc('Max Value')
+    if 'TYPE' in df.columns:
+        sheet_vals[sheetName+'_type_colLetter'] = chr(df.columns.get_loc('TYPE')+65)
+    
+    # create sheet
+    df.to_excel(theWriter, sheet_name=sheetName, index=False, startrow=1, header=False)
+    # format column widths
+    for column in df:
+        column_length = max(df[column].astype(str).map(len).max(), len(column)) + 5
+        if column_length > 30:
+            column_length = 30
+        col_idx = df.columns.get_loc(column)
+        theWriter.sheets[sheetName].set_column(col_idx, col_idx, column_length)
+    # format specifics
+    if 'Min Value' in df.columns:
+        formatMinMax(theWriter.sheets[sheetName], sheet_vals, dateFormat, datetimeFormat, numberFormat)
+    if sheetName == TAXONOMY_GLOSSARY:
+        filterAndFreeze(theWriter.sheets[sheetName], sheet_vals)
+    addFormatedHeader(theWriter.sheets[sheetName], df, header_format)
+    return sheet_vals
+
+
+def filterAndFreeze (worksheet, sheet_vals):
+    name = worksheet.get_name()
+    worksheet.autofilter(0,0,sheet_vals[name+'_max_rows'],sheet_vals[name+'_max_cols'])
+    worksheet.freeze_panes(1,0)
+
+
+def addFormatedHeader(worksheet, df, hdr_format):
+        # Write the column headers with the defined format.
+    for col_num, value in enumerate(df.columns.values):
+        worksheet.write(0, col_num, value, hdr_format)
 
 
 def main():
