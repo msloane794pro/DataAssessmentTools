@@ -40,10 +40,11 @@ def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
     glossary_df.insert(0, 'Module', moduleVal)
     glossary_df.insert(0, 'Application', appVal)
     glossary_df.insert(0, 'Domain', domainVal)
-    if "IncludeInView" not in glossary_df.columns:
-        glossary_df.insert(11, 'IncludeInView', "Y")
     
+    cleanUpGlossary(glossary_df)
+
     updatedTaxonomy_df = append_dataframes(glossary_df, taxonomy_df)
+    
 
     writeFormattedExcelFile(updatedTaxonomy_df, TAXONOMY_FILE, TAXONOMY_GLOSSARY)
     save_file_with_timestamp(TAXONOMY_FILE, ARCHIVE_DIR)
@@ -327,6 +328,32 @@ def addFormatedHeader(worksheet, df, hdr_format):
         # Write the column headers with the defined format.
     for col_num, value in enumerate(df.columns.values):
         worksheet.write(0, col_num, value, hdr_format)
+
+
+def cleanUpGlossary(dataframe):
+    if "IncludeInView" not in dataframe.columns:
+        dataframe.insert(11, 'IncludeInView', "Y")
+    trim_text_column(dataframe, "Friendly Name")
+    trim_text_column(dataframe, "Description")
+    trim_text_column(dataframe, "Notes")
+
+
+def trim_text_column(dataframe, column_name):
+    """
+    Trims leading and trailing whitespace from all text values in the specified column of the dataframe.
+    
+    Parameters:
+    dataframe (pd.DataFrame): The dataframe containing the text column to be trimmed.
+    column_name (str): The name of the column containing text values to be trimmed.
+    
+    Returns:
+    pd.DataFrame: A dataframe identical to the input, but with trimmed text values in the specified column.
+    """
+    if column_name in dataframe.columns:
+        # Apply the strip function to trim whitespace
+        dataframe[column_name] = dataframe[column_name].astype(str).str.strip()
+
+    return dataframe
 
 
 def main():
