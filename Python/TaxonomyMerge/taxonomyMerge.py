@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 import pandas as pd
 import os
 import shutil
@@ -11,8 +10,16 @@ import glob
 
 # Constants
 TAXONOMY_FILE = "CentralTaxonomyFile.xlsx"
+TAXONOMY_HIERARCHY = "Taxonomy Hierarchy"
 TAXONOMY_GLOSSARY = "Taxonomy Glossary"
 ARCHIVE_DIR = "Archive"
+TAXONOMY_COLUMNS = ['Domain', 'Application', 'Module', 
+            'TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
+            'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 
+            'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+            'Friendly Name', 'Description', 'Notes', 'TimeStamp'
+        ]
+HIERARCHY_COLUMNS = ['Domain', 'Application', 'Module', 'Data Dictionary File', 'GlossaryTab', 'TimeStamp']
 
 
 def runInitialMerge(initialMergeFile):
@@ -30,23 +37,40 @@ def runInitialMerge(initialMergeFile):
 
 
 def runMerge(domainVal, appVal, moduleVal, ddFile, glossaryTab):
+    # Get the current date and time
+    now = datetime.now()
+    # Format the timestamp
+    timestamp = now.strftime('%Y%m%d_%H%M%S.%f')[:-3]  # Using [:-3] to truncate to milliseconds
+
     print(f'Running merge:  {domainVal} - {appVal} - {moduleVal}, Data Dictionary file: {ddFile}, Glossary Tab: {glossaryTab}')
 
     create_backup_file(TAXONOMY_FILE)
 
-    taxonomy_df = create_taxonomy_df(TAXONOMY_FILE, TAXONOMY_GLOSSARY)
+    hierarchy_df = create_df(TAXONOMY_FILE, TAXONOMY_HIERARCHY, HIERARCHY_COLUMNS)
+    hierarchy_entry_df = pd.DataFrame(columns=HIERARCHY_COLUMNS)
+    hierarchy_entry_df['Domain'] = [domainVal]
+    hierarchy_entry_df['Application'] = [appVal]
+    hierarchy_entry_df['Module'] = [moduleVal]
+    hierarchy_entry_df['Data Dictionary File'] = [ddFile]
+    hierarchy_entry_df['GlossaryTab'] = [glossaryTab]
+    hierarchy_entry_df['TimeStamp'] = [timestamp]
+
+    updatedhierarchy_df = append_dataframes(hierarchy_entry_df, hierarchy_df)
+
+    taxonomy_df = create_df(TAXONOMY_FILE, TAXONOMY_GLOSSARY, TAXONOMY_COLUMNS)
 
     glossary_df = pd.read_excel(ddFile, sheet_name=glossaryTab)
     glossary_df.insert(0, 'Module', moduleVal)
     glossary_df.insert(0, 'Application', appVal)
     glossary_df.insert(0, 'Domain', domainVal)
+    glossary_df.insert(0, 'TimeStamp', timestamp)
     
     cleanedUpGlossary_df = cleanUpGlossary(glossary_df)
 
     updatedTaxonomy_df = append_dataframes(cleanedUpGlossary_df, taxonomy_df)
-    cleanedUpTaxonomy = cleanUpTaxonomy(updatedTaxonomy_df)
+    cleanedUpTaxonomy_df = cleanUpTaxonomy(updatedTaxonomy_df)
     
-    writeFormattedExcelFile(cleanedUpTaxonomy, TAXONOMY_FILE, TAXONOMY_GLOSSARY)
+    writeFormattedExcelFile2Tabs(updatedhierarchy_df, cleanedUpTaxonomy_df, TAXONOMY_FILE, TAXONOMY_HIERARCHY, TAXONOMY_GLOSSARY)
     save_file_with_timestamp(TAXONOMY_FILE, ARCHIVE_DIR)
     print(f'...{TAXONOMY_FILE} saved. {len(glossary_df)} rows added')
 
@@ -88,17 +112,38 @@ def create_taxonomy_df(fileName, tabName):
             #df = pd.DataFrame()  # Return an empty dataframe
     else:
         # If the file does not exist, create an empty dataframe with specified columns
-        columns = ["Domain", "Application", "Module",
-            "TABLENAME", "COLNAME", "TYPE", "LEN", "Min Value", "Max Value", "Cardinality", "Max Length", 
-            "IncludeInView", "IsPrimaryKey", "PK_name", "PK_ordinal_position", 
-            "IsForeignKey", "FK_name", "FK_referenced_table", "FK_referenced_column", 
-            "Friendly Name", "Description", "Notes"
-        ]
+        columns = TAXONOMY_COLUMNS
         df = pd.DataFrame(columns=columns)
         #print(f"File {fileName} does not exist. An empty dataframe is created.")
 
     # Return the dataframe
     return df
+
+
+def create_df(fileName, tabName, column_names):
+    # Check if the file exists
+    if os.path.isfile(fileName):
+        try:
+            # If the file exists, read the specified sheet into a Pandas dataframe
+            df = pd.read_excel(fileName, sheet_name=tabName, index_col=None)
+            #print(f"...Dataframe created from {tabName} tab in {fileName}")
+        except ValueError as e:
+            # Sheet not found in the workbook
+            print(f"Tab {tabName} does not exist in {fileName}: {e}")
+            #df = pd.DataFrame()  # Return an empty dataframe
+        except Exception as e:
+            # Handle other exceptions such as file not being an Excel file
+            print(f"An error occurred: {e}")
+            #df = pd.DataFrame()  # Return an empty dataframe
+    else:
+        # If the file does not exist, create an empty dataframe with specified columns
+        columns = column_names
+        df = pd.DataFrame(columns=columns)
+        #print(f"File {fileName} does not exist. An empty dataframe is created.")
+
+    # Return the dataframe
+    return df
+
 
 
 def save_file_with_timestamp(fileName, directoryName):
@@ -205,7 +250,7 @@ def process_initialMerge_file(fileName):
     for index, row in df.iterrows():
         # Call the runMerge() method with row values as parameters
         runMerge(row['Domain'], row['Application'], row['Module'], row['Data Dictionary File'], row['GlossaryTab'])
-        time.sleep(1.1)
+        time.sleep(1.5)
 
 
 def delete_backup_files(directory):
@@ -250,6 +295,32 @@ def writeFormattedExcelFile(df, fileName, tabName):
 
     createFormattedSheet(writer, df, tabName, sheet_vals, dateFormat, datetimeFormat, numberFormat, header_format)
     writer.close()
+
+
+def writeFormattedExcelFile2Tabs(df1, df2, fileName, tabName1, tabName2):
+    print(f"Writing Formatted Taxonomy Excel file: {fileName}")
+    writer = pd.ExcelWriter(fileName)
+    workbook = writer.book
+    sheet_vals = {}
+    dateFormat = workbook.add_format()
+    dateFormat.set_num_format('mm/dd/yy')
+    datetimeFormat = workbook.add_format()
+    datetimeFormat.set_num_format('mm/dd/yy hh:mm')
+    numberFormat = workbook.add_format()
+    numberFormat.set_num_format('###,###,###,##0;-###,###,###,##0')
+    header_format = workbook.add_format({
+        'bg_color': '#0070C0',  
+        'font_color': '#FFFFFF',
+        'bold': True,           
+        'text_wrap': False,
+        'valign': 'top',
+        'align': 'center',
+        'border': 1})
+
+    createFormattedSheet(writer, df1, tabName1, sheet_vals, dateFormat, datetimeFormat, numberFormat, header_format)
+    createFormattedSheet(writer, df2, tabName2, sheet_vals, dateFormat, datetimeFormat, numberFormat, header_format)
+    writer.close()
+
 
 
 # Table Formatting Methods
@@ -334,9 +405,17 @@ def addFormatedHeader(worksheet, df, hdr_format):
 def cleanUpGlossary(dataframe):
     if "IncludeInView" not in dataframe.columns:
         dataframe.insert(11, 'IncludeInView', "Y")
+    if 'Include in Views' in dataframe.columns:
+        print(f'...Droping the "Include in Views" column')
+        dataframe = dataframe.drop('Include in Views', axis=1)
     dataframe = trim_text_column(dataframe, "Friendly Name")
     dataframe = trim_text_column(dataframe, "Description")
     dataframe = trim_text_column(dataframe, "Notes")
+
+    # Replace 'NaN' values in the 'Notes' column with an empty string
+    dataframe['Notes'] = dataframe['Notes'].fillna('')
+    # If you specifically need to replace the string 'nan' (not the NaN value), use replace:
+    dataframe['Notes'] = dataframe['Notes'].replace('nan', '')
 
     return dataframe
 
