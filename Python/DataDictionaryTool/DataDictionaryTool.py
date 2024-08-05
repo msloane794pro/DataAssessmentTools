@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.06.28 03:26:34'
+dateLastUpdated = '2024.08.05 03:26:34'
 
 
 
@@ -329,12 +329,14 @@ def run_tool():
 
     print("Performing analysis on Glossary data...")
 
-    fixed_string = 'Y'
-    glossary['IncludeInView'] = 'Y'
+    fixed_string_y = 'Y'
+    fixed_string_n = 'N'
+    glossary['IncludeInView'] = fixed_string_y
+    glossary['AlreadyInDataHub'] = fixed_string_n
 
     #Reorder columns in the Glossary.
     new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'IncludeInView', 'AlreadyInDataHub', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
                      'Friendly Name', 'Description']
     glossary = reorder_dataframe_columns(glossary, new_col_order)
 
@@ -431,9 +433,7 @@ if __name__ == '__main__':
                                    
                     Reference:
                         Standardized SQL Queries are saved here:
-                        https://inl.sharepoint.com/:f:/r/sites/GRP-AgreeDataAssessmentTeam/Shared%20Documents/General/Data%20Modeling/SQL_queries
-                            List of tables: SQLServer_list_of_tables_to_include.sql
-                            Table characteristics: SQLServer_table_characteristics.sql
+                        https://github.com/msloane794pro/DataAssessmentTools/tree/main/SQL
                 '''))
         parser.add_argument('--database', type=str, default=None, help='Simple operation: Database name used for input file naming convention.')
         parser.add_argument('--tableList', type=str, default= None, help='Custom operation: Excel file name for the list of tables.')

@@ -127,8 +127,8 @@ def validateGlossaryColumns(valId):
     observedDf = pd.read_excel(expectedOutputFile, sheet_name='Glossary', dtype=str, keep_default_na=False)
 
     expectedCols = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                    'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column',
-                    'Friendly Name', 'Description']
+                     'IncludeInView', 'AlreadyInDataHub', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'Friendly Name', 'Description']
 
     assertEquals(expectedCols[0], observedDf.columns[0], valId)
     assertEquals(expectedCols[1], observedDf.columns[1], valId)
@@ -647,6 +647,8 @@ def validateGlossaryValuesSparse(valId):
     assertEquals('True', observedDf["IsPrimaryKey"][37], str(f'{valId} - ["IsPrimaryKey"][37]'))
     assertEquals('True', observedDf["IsForeignKey"][0], str(f'{valId} - ["IsForeignKey"][0]'))
     assertEquals('False', observedDf["IsForeignKey"][1], str(f'{valId} - ["IsForeignKey"][1]'))
+    assertEquals('Y', observedDf["IncludeInView"][2], str(f'{valId} - ["IncludeInView"][2]'))
+    assertEquals('N', observedDf["AlreadyInDataHub"][3], str(f'{valId} - ["AlreadyInDataHub"][3]'))
     assertEquals('Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here.', observedDf["Notes"][193], str(f'{valId} - ["Notes"][193]'))
     assertEquals('Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here.', observedDf["Notes"][187], str(f'{valId} - ["Notes"][187]'))
 
