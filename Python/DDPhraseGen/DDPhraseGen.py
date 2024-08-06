@@ -23,7 +23,7 @@ dateLastUpdated = '2024.05.20 03:26:34'
 maxRetries = 3
 
 
-def run_description_program(tables, columnData, output_file, phraseType):
+def run_description_program(dbDescr, tables, columnData, output_file, phraseType):
     print(f'Running Description program with output: {output_file}, type: {phraseType}')
     print(f'Input data contains {columnData.shape[0]} rows.')
     pgen = OpenAiDDPhraseGen()
@@ -32,14 +32,15 @@ def run_description_program(tables, columnData, output_file, phraseType):
     failedTables = tables['TableName'].tolist()
     column_names = ['TableName', 'ColumnName', 'Friendly Name', 'Description']
     sessionData = pd.DataFrame(columns=column_names)
+    tableData = pd.DataFrame(tables)
 
-    tablesDf = tables
+    tablesDf = tableData
 
     while iterationCount <= maxRetries:
         for i in range(len(modelList)):
             print(f'-->\nRunning iteration {iterationCount} on AI Model `{modelList[i]}` on {len(failedTables)} tables.')
 
-            currentSessionData, currentFailedTables = run_descr_session(pgen, tablesDf, columnData, phraseType, output_file, 0)
+            currentSessionData, currentFailedTables = run_descr_session(pgen, dbDescr, tablesDf, columnData, phraseType, output_file, 0)
             
             if len(currentFailedTables) < len(failedTables):
                 sessionData = pd.concat([sessionData, currentSessionData], ignore_index=True)
@@ -54,8 +55,15 @@ def run_description_program(tables, columnData, output_file, phraseType):
 
         iterationCount += 1    
 
-    completedSessionDf = pd.DataFrame(sessionData)
-    sessionDf = completedSessionDf.sort_values(by=['TableName', 'ColumnName'])
+
+    tableData['AlreadyInDataHub'] = 'N'
+    newOrder = ['TableName', 'AlreadyInDataHub', 'Description']
+    tableData = tableData[newOrder]
+
+    sessionData['IncludeInView'] = 'Y'
+    newOrder = ['TableName', 'ColumnName', 'IncludeInView', 'Friendly Name', 'Description']
+    sessionData = sessionData[newOrder]
+    sessionDf = sessionData.sort_values(by=['TableName', 'ColumnName'])
     if len(failedTables) > 0:
         print(f'Unable to create Descriptions for the following Tables: {failedTables}')
 
@@ -65,7 +73,7 @@ def run_description_program(tables, columnData, output_file, phraseType):
     descriptionCount = descriptions_generated.shape[0]
     print(f'Descriptions generated: {descriptionCount} ({format(100 * descriptionCount/completedNumRows, ".1f")}%).')
     
-    tables.to_excel(output_file, sheet_name='Table Descriptions', index=False)
+    tableData.to_excel(output_file, sheet_name='Table Descriptions', index=False)
     with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
         sessionDf.to_excel(writer, sheet_name='Column Descriptions', index=False)
 
@@ -78,7 +86,7 @@ def dataframe_to_dict(df):
     return df.to_dict('list')
 
 
-def run_friendlyName_program(tables, glossary, output_file, phraseType):
+def run_friendlyName_program(dbDescr, tables, glossary, output_file, phraseType):
     print(f'Running Friendly program with output: {output_file}, type: {phraseType}')
     print(f'Input data contains {glossary.shape[0]} rows.')
 
@@ -94,7 +102,7 @@ def run_friendlyName_program(tables, glossary, output_file, phraseType):
         for i in range(len(modelList)):
             print(f'-->\nRunning iteration {iterationCount} on AI Model `{modelList[i]}` on {len(failedTables)} tables.')
 
-            currentSessionData, currentFailedTables = run_fname_session(pgen, tablesDf, glossary, phraseType, output_file, i)
+            currentSessionData, currentFailedTables = run_fname_session(pgen, dbDescr, tablesDf, glossary, phraseType, output_file, i)
             
             if len(currentFailedTables) < len(failedTables):
                 sessionData = sessionData + currentSessionData
@@ -128,7 +136,7 @@ def run_friendlyName_program(tables, glossary, output_file, phraseType):
     print(f'Complete generated data saved to: {output_file}')
 
 
-def run_descr_session(pgen, tables, colDataDf, phraseType, transcriptName, model):
+def run_descr_session(pgen, dbDescr, tables, colDataDf, phraseType, transcriptName, model):
     current_time = datetime.now()
     sessionId = f'{transcriptName.split(".", 1)[0]}{current_time.strftime("%Y%m%d%H%M%S")}'
     print(f'Running a {phraseType} session. Session ID: {sessionId}')
@@ -156,7 +164,7 @@ def run_descr_session(pgen, tables, colDataDf, phraseType, transcriptName, model
         print(f"   Generating {phraseType} phrases for Table Name: {tableName} with {numCols} columns...")
 
         try:
-            responseText = pgen.sendSessionPrompt(sessionId, phraseType, tableName, colDatStrList)
+            responseText = pgen.sendSessionPrompt(sessionId, phraseType, dbDescr, tableName, colDatStrList)
             #Assume that response text is in standardized CSV format..
 
             respLength = count_csv_data_rows(responseText)
@@ -269,7 +277,7 @@ def append_csv_to_dataframe(df, csv_data):
     return new_df
 
 
-def run_fname_session(pgen, tables, glossary, phraseType, transcriptName, model):
+def run_fname_session(pgen, dbDescr, tables, glossary, phraseType, transcriptName, model):
     current_time = datetime.now()
     sessionId = f'{transcriptName.split(".", 1)[0]}{current_time.strftime("%Y%m%d%H%M%S")}'
     print(f'Running a {phraseType} session. Session ID: {sessionId}')
@@ -294,7 +302,7 @@ def run_fname_session(pgen, tables, glossary, phraseType, transcriptName, model)
         print(f"   Generating {phraseType} phrases for Table Name: {tableName} with {numCols} columns...")
 
         try:
-            responseText = pgen.sendSessionPrompt(sessionId, phraseType, tableName, colList)
+            responseText = pgen.sendSessionPrompt(sessionId, phraseType, dbDescr, tableName, colList)
             respLength = len(splitAndFilterLines(responseText))
             if respLength != numCols:
                 print(f'      !!!ERROR: Unexpected response length: {numCols} was expected but {respLength} lines were received. Check transcript for Table Name {tableName}.')
@@ -500,6 +508,7 @@ parser = argparse.ArgumentParser(description=f'Data Dictionary Phrase Generator 
 parser.add_argument('-i', '--input', type=str, required=True, help='Data Dictionary Input file name')
 parser.add_argument('-o', '--output', type=str, required=True, help='Output file name')
 parser.add_argument('-t', '--type', type=str, required=True, help='Phrase Type (DESCRIPTION | FRIENDLYNAME)')
+parser.add_argument('-d', '--descr', type=str, required=False, help='Database description (one word) - Optional')
 
 # Parse the command line arguments
 args = parser.parse_args()
@@ -513,16 +522,19 @@ check_input_file_exists(args.input)
 
 check_output_file(args.output)
 
-
+if args.descr is not None:
+    dbDescrVal = args.descr
+else:
+    dbDescrVal = "relational"
 
 
 # Call the appropriate "run" method with the parsed arguments
 
 if args.type.upper() == pt.FRIENDLYNAME.name:
     tableListDf, glossaryDf = validate_dd_excel_file(args.input)
-    run_friendlyName_program(tableListDf, glossaryDf, args.output, args.type.upper())
+    run_friendlyName_program(dbDescrVal, tableListDf, glossaryDf, args.output, args.type.upper())
 elif args.type.upper() == pt.DESCRIPTION.name:
     tableListDf, colListDf = validate_fname_excel_file(args.input)
-    run_description_program(tableListDf, colListDf, args.output, args.type.upper())
+    run_description_program(dbDescrVal, tableListDf, colListDf, args.output, args.type.upper())
 else:
     sys.exit()

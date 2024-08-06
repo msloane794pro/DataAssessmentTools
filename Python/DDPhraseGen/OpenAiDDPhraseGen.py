@@ -14,11 +14,12 @@ import datetime
 import re
 
 # Define operational constants.
-dateLastUpdated = '2024.05.20 03:26:34'
+dateLastUpdated = '2024.08.05 03:26:34'
 # ai_model_base_url='https://api.hpc.inl.gov/llm/v1'
 # ai_model_api_key='5mdim-8qu4h-pq2g7-ivhl6-memyi'
 selected_ai_model = 0
 tableNameSubstPattern = '~~~tableName~~~'
+dbDescrSubstPattern = '~~~dbDescrSubst~~~'
 sessionIdSubstPattern = '~~~sessionId~~~'
 
 class PhraseType(Enum):
@@ -48,38 +49,7 @@ The Session ID value for this session is: {sessionIdSubstPattern}
 The format of the response for this prompt must be consistent with the responses from earlier prompts in this session.
 """
 
-#     _descriptionPrompt = f"""I will provide you with a list of names of data elements within a database table named `{tableNameSubstPattern}`.
-# For each of the element names provided in the list, generate a sentence describing the element.
-# Return a list of sentence descriptions that correspond to the list of data elements provided.
-# Each sentence description should be returned on a single line of text.  
-# Always return one sentence for each element name provided, even if there are similarly named elements in the provided list.
-# Never mention multiple elements within a single sentance.
-# For example, never provide a sentence like `D1 to D9: Nine variables used to store different values or data points within a program.`
-# Only return the list of sentence descriptions, and do not return any introductory text.
-# For example, do not return a line of text that says `Here is the list of sentence descriptions for table {tableNameSubstPattern}.`
-# Here are the list of data element names:
-# """
-
-#     _descriptionPrompt = f"""I will provide you with a data table that includes properties of a database table named `{tableNameSubstPattern}`.
-# Each row of the data table will consist of an element name and a human readable `Friendly Name` for an element in the database table `{tableNameSubstPattern}`.
-# For each row of data, use the element name and the friendly name to generate a sentence describing the element.
-# Return each of the sentence descriptions on seperate lines of text.
-# Here is the data table:
-# """
-    
-#     _descriptionPromptHTML = f"""Given the following data table containing information from a Drawings Database, produce a description for each entry.
-# Return your response as a table of data in HTML table format with the same number of rows as the provided data table.  
-# The returned table must have the following columns: 'TableName', 'ColumnName', 'Friendly Name', 'Description' where the 'Description' column contains the description of the entry.
-# """
-
-#     _descriptionPromptPandas = f"""Given an input data table containing information from a Drawings Database, produce a description for each entry.
-# Return your response as a table of data with the same number of rows as the provided data table.  
-# Return the table in the following format used by Python Pandas:  {'TableName': ['table name 1', 'table name 2', 'table name 3'],'ColumnName': ['column name 1', 'column name 2', 'column name 3'],'Friendly Name': ['friendly name 1', 'friendly name 2', 'friendly name 3'],'Description': ['description 1', 'description 2', 'description 3']}
-# The returned table must have the following columns: 'TableName', 'ColumnName', 'Friendly Name', 'Description' where the 'Description' column contains the description of the entry.
-# Here is the input data table:
-# """
-
-    _descriptionPrompt = f"""Given the following data table containing information from a Drawings Database, produce a description for each entry.
+    _descriptionPrompt = f"""Given the following data table containing information from a {dbDescrSubstPattern} Database, produce a description for each entry.
 Return your response as a table of data in Standardized CSV format.
 "Header 1","Header 2","Header 3"
 "Value 1","Value 2","Value 3"
@@ -89,8 +59,6 @@ Do not include any other text in your response.
 The returned table must have the following columns: "TableName", "ColumnName", "Friendly Name", "Description" where the 'Description' column contains the description of the entry.
 The number of data value rows returned must exactly equal the number of data rows in the provided data table.
 """
-
-
 
     _friendlyNamesPrompt = f"""I will provide you with a list of names of data elements within a database table named `{tableNameSubstPattern}`. 
 For each data element name, I need you to create a `Friendly Name` as follows:
@@ -117,7 +85,6 @@ Do not include the original element name in your response.
 Only return the list of friendly names, and do not return any introductory text.
 Here are the list of data element names:
 """
-
 
 
     def __init__(self):       
@@ -201,16 +168,16 @@ AI_MODEL_API_KEY=Insert your API key here
             raise SystemError(e)
 
 
-    def sendSessionPrompt(self, sessionId, sessionType, tableName, elementList):
-        userMessageText = self.createSessionMessageText(sessionId, sessionType, tableName, elementList)
+    def sendSessionPrompt(self, sessionId, sessionType, dbDescr, tableName, elementList):
+        userMessageText = self.createSessionMessageText(sessionId, sessionType, dbDescr, tableName, elementList)
         messages = [self.getSystemMessage(), self.constructUserMessage(userMessageText)]
         response = self._chat_completion_request(messages, sessionId)
         responseText = response.choices[0].message.content       
-        self.log_transcript_message(sessionId, f'Response received from {self._modelName}:\n{responseText}\n')
+        self.log_transcript_message(sessionId, f'\nResponse received from {self._modelName}:\n{responseText}\n\n\n')
         return responseText
 
 
-    def createSessionMessageText(self, sessionId, sessionType, tableName, elementList):
+    def createSessionMessageText(self, sessionId, sessionType, dbDescr, tableName, elementList):
         introText = self.manageSession(sessionId)
 
         #print(f'Element list: {elementList}')
@@ -219,9 +186,11 @@ AI_MODEL_API_KEY=Insert your API key here
         elementListString = "\n".join(str(x) for x in elementList)
 
         if sessionType == PhraseType.DESCRIPTION.name:
-            promptString = self._descriptionPrompt.replace(tableNameSubstPattern, tableName)
+            promptString = self._descriptionPrompt.replace(dbDescrSubstPattern, dbDescr)
         else:
             promptString = self._friendlyNamesPrompt.replace(tableNameSubstPattern, tableName)
+
+        
 
         promptContent = introText + promptString + elementListString
         self.log_transcript_message(sessionId, promptContent)
@@ -232,7 +201,7 @@ AI_MODEL_API_KEY=Insert your API key here
     def manageSession(self, sessionId):
         if sessionId != '':
             if sessionId != self._sessionId:
-                self.log_transcript_message(sessionId, f'Session Transcript {sessionId} - AI Model: {self._modelName}')
+                self.log_transcript_message(sessionId, f'New Session Transcript {sessionId} - AI Model: {self._modelName}')
                 self._sessionId = sessionId
                 self._sessionGuid = uuid.uuid4()
                 introText = self._initialPromtIntro.replace(sessionIdSubstPattern, str(self._sessionGuid))
