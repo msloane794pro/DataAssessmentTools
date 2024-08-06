@@ -103,11 +103,13 @@ def validateTablesWs(valId):
     if len(observedDf.columns) < 2:
         raise Exception (f'Validation {valId} - FAIL - Incorrect number of column in Tables worksheet. Expected: 2 or more; Observed: {len(observedDf.columns)}')
 
-    expectedCols = ['TableName', 'Description']
+    expectedCols = ['TableName', 'AlreadyInDataHub', 'Description']
     if observedDf.columns[0] != expectedCols[0]:
         raise Exception (f'Validation {valId} - FAIL - Incorrect column in Tables worksheet. Expected: {expectedCols[0]}; Observed: {observedDf.columns[0]}')
     if observedDf.columns[1] != expectedCols[1]:
         raise Exception (f'Validation {valId} - FAIL - Incorrect column in Tables worksheet. Expected: {expectedCols[1]}; Observed: {observedDf.columns[1]}')
+    if observedDf.columns[2] != expectedCols[2]:
+        raise Exception (f'Validation {valId} - FAIL - Incorrect column in Tables worksheet. Expected: {expectedCols[2]}; Observed: {observedDf.columns[2]}')
 
     tprint(f'Validation {valId} - Pass - Tables worksheet constructed correctly in {expectedOutputFile}')
 
@@ -127,7 +129,7 @@ def validateGlossaryColumns(valId):
     observedDf = pd.read_excel(expectedOutputFile, sheet_name='Glossary', dtype=str, keep_default_na=False)
 
     expectedCols = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                     'IncludeInView', 'AlreadyInDataHub', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
                      'Friendly Name', 'Description']
 
     assertEquals(expectedCols[0], observedDf.columns[0], valId)
@@ -648,7 +650,6 @@ def validateGlossaryValuesSparse(valId):
     assertEquals('True', observedDf["IsForeignKey"][0], str(f'{valId} - ["IsForeignKey"][0]'))
     assertEquals('False', observedDf["IsForeignKey"][1], str(f'{valId} - ["IsForeignKey"][1]'))
     assertEquals('Y', observedDf["IncludeInView"][2], str(f'{valId} - ["IncludeInView"][2]'))
-    assertEquals('N', observedDf["AlreadyInDataHub"][3], str(f'{valId} - ["AlreadyInDataHub"][3]'))
     assertEquals('Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here.', observedDf["Notes"][193], str(f'{valId} - ["Notes"][193]'))
     assertEquals('Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here.', observedDf["Notes"][187], str(f'{valId} - ["Notes"][187]'))
 
@@ -784,7 +785,8 @@ if __name__ == '__main__':
 
     except Exception as e: tprint(f'!!! EXCEPTION: {e}')
     finally:
-        time.sleep(1)
+        tprint('Pausing...')
+        time.sleep(2)
         deleteTestDataFiles()
         tprint('Testing is complete.')
     

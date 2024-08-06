@@ -161,10 +161,12 @@ def run_tool():
         includedTables = includedTables.reindex(columns = includedTables.columns.tolist() + ['Description'])
 
         print("Adding default valuse for IncludeInView and AlreadyInDataHub...")
-        fixed_string_y = 'Y'
-        fixed_string_n = 'N'
+        fixed_string_y = 'Y'   
         glossary['IncludeInView'] = fixed_string_y
-        glossary['AlreadyInDataHub'] = fixed_string_n
+        fixed_string_n = 'N'
+        includedTables['AlreadyInDataHub'] = fixed_string_n
+        newOrder = ['TableName', 'AlreadyInDataHub', 'Description']
+        includedTables = includedTables[newOrder]
 
 
     def reorder_dataframe_columns(df, column_order):
@@ -337,7 +339,7 @@ def run_tool():
 
     #Reorder columns in the Glossary.
     new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                     'IncludeInView', 'AlreadyInDataHub', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
                      'Friendly Name', 'Description']
     glossary = reorder_dataframe_columns(glossary, new_col_order)
 
