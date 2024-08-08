@@ -19,7 +19,7 @@ from OpenAiDDPhraseGen import PhraseType as pt
 from OpenAiDDPhraseGen import OpenAiDDPhraseGen
 
 # Define constants
-dateLastUpdated = '2024.05.20 03:26:34'
+dateLastUpdated = '2024.08.08 03:26:34'
 maxRetries = 3
 
 
@@ -37,10 +37,10 @@ def run_description_program(dbDescr, tables, columnData, output_file, phraseType
     tablesDf = tableData
 
     while iterationCount <= maxRetries:
-        for i in range(len(modelList)):
-            print(f'-->\nRunning iteration {iterationCount} on AI Model `{modelList[i]}` on {len(failedTables)} tables.')
+        for i in reversed(range(len(modelList))):
+            print(f'-->\nRunning iteration {iterationCount} on AI Model {i}: `{modelList[i]}` on {len(failedTables)} tables.')
 
-            currentSessionData, currentFailedTables = run_descr_session(pgen, dbDescr, tablesDf, columnData, phraseType, output_file, 0)
+            currentSessionData, currentFailedTables = run_descr_session(pgen, dbDescr, tablesDf, columnData, phraseType, output_file, i)
             
             if len(currentFailedTables) < len(failedTables):
                 sessionData = pd.concat([sessionData, currentSessionData], ignore_index=True)
@@ -71,7 +71,8 @@ def run_description_program(dbDescr, tables, columnData, output_file, phraseType
     print(f'Completed session data contains {completedNumRows} rows.')
     descriptions_generated = sessionDf.query("`Description`!= ''")
     descriptionCount = descriptions_generated.shape[0]
-    print(f'Descriptions generated: {descriptionCount} ({format(100 * descriptionCount/completedNumRows, ".1f")}%).')
+    columnCount = columnData.shape[0]
+    print(f'Descriptions generated: {descriptionCount} out of {columnCount} ({format(100 * descriptionCount/columnCount, ".1f")}%).')
     
     tableData.to_excel(output_file, sheet_name='Table Descriptions', index=False)
     with pd.ExcelWriter(output_file, engine='openpyxl', mode='a') as writer:
@@ -100,7 +101,7 @@ def run_friendlyName_program(dbDescr, tables, glossary, output_file, phraseType)
 
     while iterationCount <= maxRetries:
         for i in range(len(modelList)):
-            print(f'-->\nRunning iteration {iterationCount} on AI Model `{modelList[i]}` on {len(failedTables)} tables.')
+            print(f'-->\nRunning iteration {iterationCount} on AI Model {i}: `{modelList[i]}` on {len(failedTables)} tables.')
 
             currentSessionData, currentFailedTables = run_fname_session(pgen, dbDescr, tablesDf, glossary, phraseType, output_file, i)
             
@@ -123,7 +124,7 @@ def run_friendlyName_program(dbDescr, tables, glossary, output_file, phraseType)
     if len(failedTables) > 0:
         print(f'Unable to create Friendly Names for the following Tables: {failedTables}')
 
-    completedNumRows = sessionDf.shape[0]
+    completedNumRows = glossary.shape[0]
     print(f'Completed session data contains {completedNumRows} rows.')
     friendlyNames_generated = sessionDf.query("`Friendly Name`!= ''")
     friendlynameCount = friendlyNames_generated.shape[0]
@@ -179,9 +180,11 @@ def run_descr_session(pgen, dbDescr, tables, colDataDf, phraseType, transcriptNa
                     #     responseText = responseText.replace("\\_", " ").replace("_", " ")
                     numSuccesses += 1
                     sessionData = append_csv_to_dataframe(sessionData, responseText)
+                    pgen.log_transcript_message(sessionId, f'Response data was successfully processed.')
         except Exception as e:
-            print(f'      !!!ERROR: Exception occured during phrase generation. Check transcript for Table Name {tableName}.')
+            print(f'      !!!ERROR: Exception occured during description generation. Check transcript for Table Name {tableName}.')
             print(f'      Exception:{e}')
+            pgen.log_transcript_message(sessionId, f"Exception: {e}")
             failedTables.append(tableName)           
             if ('NETWORK ERROR DUE TO HIGH TRAFFIC' in str(e)) or ('The upstream server is timing out' in str(e)):
                 print(f'   Pausing prompts for 15 seconds...')
@@ -189,7 +192,7 @@ def run_descr_session(pgen, dbDescr, tables, colDataDf, phraseType, transcriptNa
 
         time.sleep(2)
 
-    print(f'Session complete.  Success: {format(100* numSuccesses/len(tables), ".1f")}%')
+    print(f'Description Session complete.  Success: {format(100* numSuccesses/len(tables), ".1f")}%')
     print(f'Failed tables: {failedTables}')
     return (sessionData, failedTables)
 
@@ -248,7 +251,7 @@ def validate_csv_headers(df, csv_string):
     
     # Check if the columns match
     if csv_columns != df_columns:
-        raise ValueError("CSV header values do not match DataFrame column names.")
+        raise ValueError(f'CSV header values do not match DataFrame column names.\n         CSV Columns: {csv_columns}\n         DF  Columns: {df_columns}')
     
     return True
 
@@ -315,7 +318,7 @@ def run_fname_session(pgen, dbDescr, tables, glossary, phraseType, transcriptNam
                 numSuccesses += 1
                 sessionData = addFriendlyNamesToSessionData(sessionData, tableName, colList, responseText)
         except Exception as e:
-            print(f'      !!!ERROR: Exception occured during phrase generation. Check transcript for Table Name {tableName}.')
+            print(f'      !!!ERROR: Exception occured during friendly name generation. Check transcript for Table Name {tableName}.')
             print(f'      Exception:{e}')
             failedTables.append(tableName)           
             if ('NETWORK ERROR DUE TO HIGH TRAFFIC' in str(e)) or ('The upstream server is timing out' in str(e)):
@@ -324,7 +327,7 @@ def run_fname_session(pgen, dbDescr, tables, glossary, phraseType, transcriptNam
 
         time.sleep(2)
 
-    print(f'Session complete.  Success: {format(100* numSuccesses/len(tables), ".1f")}%')
+    print(f'Friendly Name Session complete.  Success: {format(100* numSuccesses/len(tables), ".1f")}%')
     print(f'Failed tables: {failedTables}')
     return (sessionData, failedTables)
 
