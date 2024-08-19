@@ -14,7 +14,8 @@ ON
     ac.table_name = at.table_name 
     AND ac.owner = at.owner
 WHERE 
-    at.owner = 'TRAIN' -- Edit Schema name as needed.
+    at.owner = 'EDMS70' -- Edit Schema name as needed.
+    --AND at.table_name IN ('DOC_INDEX', 'DRUI', 'DRUI_MAP', 'OBJECTS', 'RPM_USER_GROUP', 'USERS')
     AND at.num_rows IS NOT NULL
 GROUP BY 
     at.table_name,

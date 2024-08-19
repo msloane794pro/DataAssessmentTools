@@ -25,7 +25,7 @@ LEFT JOIN (
     FROM all_cons_columns acc
     JOIN all_constraints ac ON acc.owner = ac.owner AND acc.constraint_name = ac.constraint_name
     WHERE ac.constraint_type = 'P'
-      AND ac.owner = 'DRAWING'
+      AND ac.owner = 'EDMS70' -- Edit Schema name as needed.
 ) pk_col ON atc.table_name = pk_col.table_name AND atc.column_name = pk_col.column_name
 LEFT JOIN (
     SELECT acc.table_name, acc.column_name, ac.constraint_name, 
@@ -35,8 +35,9 @@ LEFT JOIN (
     JOIN all_constraints r_ac ON ac.r_owner = r_ac.owner AND ac.r_constraint_name = r_ac.constraint_name
     JOIN all_cons_columns r_acc ON r_ac.owner = r_acc.owner AND r_ac.constraint_name = r_acc.constraint_name AND r_acc.position = acc.position
     WHERE ac.constraint_type = 'R'
-      AND ac.owner = 'DRAWING'
+      AND ac.owner = 'EDMS70' -- Edit Schema name as needed.
 ) fk_info ON atc.table_name = fk_info.table_name AND atc.column_name = fk_info.column_name
-WHERE atc.OWNER = 'DRAWING'
-  AND atc.table_name IN ('A_DRAFTERS', 'A_DRAWINGS', 'ARP_REPORT', 'CLOSED_DARS', 'DRAFTERS', 'DRAW_NUMBERING', 'DRAWINGS', 'DRAWINGS_AUDIT', 'ENGINEERS', 'ERROR_LOG', 'ESSENTIAL_AREA', 'ESSENTIAL_LOG', 'INDEX_CODES', 'MARKUPTAB', 'OLD_CAD', 'SPECIAL_CODES', 'SPECIAL_CODES_LOG', 'STW_DRAWINGS', 'SUPERSEDED_DRAWINGS', 'SYSTEM_CODES', 'SYSTEM_LOV')
+WHERE atc.OWNER = 'EDMS70' -- Edit Schema name as needed.
+  -- Un-comment and edit list of tables as needed.
+  --AND atc.table_name IN ('DOC_INDEX', 'DRUI', 'DRUI_MAP', 'OBJECTS', 'RPM_USER_GROUP', 'USERS')
 ORDER BY atc.table_name, atc.column_name;
