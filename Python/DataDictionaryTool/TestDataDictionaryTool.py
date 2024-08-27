@@ -650,15 +650,29 @@ def validateGlossaryValuesSparse(valId):
     assertEquals('True', observedDf["IsForeignKey"][0], str(f'{valId} - ["IsForeignKey"][0]'))
     assertEquals('False', observedDf["IsForeignKey"][1], str(f'{valId} - ["IsForeignKey"][1]'))
     assertEquals('Y', observedDf["IncludeInView"][2], str(f'{valId} - ["IncludeInView"][2]'))
-    assertEquals('Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here.', observedDf["Notes"][193], str(f'{valId} - ["Notes"][193]'))
-    assertEquals('Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here.', observedDf["Notes"][187], str(f'{valId} - ["Notes"][187]'))
 
     assertEquals('Room Category', observedDf["Friendly Name"][235], str(f'{valId} - ["Friendly Name"][235]'))
     assertEquals('Employee Count', observedDf["Friendly Name"][85], str(f'{valId} - ["Friendly Name"][85]'))    
     assertEquals('Survey Photo for table rTable', observedDf["Description"][245], str(f'{valId} - ["Description"][245]'))
     assertEquals('Historic Building? for table bTable', observedDf["Description"][95], str(f'{valId} - ["Description"][95]'))
 
-    tprint(f'Validation {valId} - Pass - Sparce spot-checking of Glossary values are all correct in {expectedOutputFile}')
+    assertEquals('', observedDf["Notes"][180], str(f'{valId} - ["Notes"][180]'))
+    assertEquals('', observedDf["Notes"][181], str(f'{valId} - ["Notes"][181]'))
+    assertEquals('', observedDf["Notes"][199], str(f'{valId} - ["Notes"][199]'))
+    assertEquals('', observedDf["Notes"][22], str(f'{valId} - ["Notes"][22]'))
+    assertEquals('', observedDf["Notes"][46], str(f'{valId} - ["Notes"][46]'))
+    assertEquals('', observedDf["Notes"][133], str(f'{valId} - ["Notes"][133]'))
+    assertEquals('', observedDf["Notes"][176], str(f'{valId} - ["Notes"][176]'))
+    assertEquals('', observedDf["Notes"][240], str(f'{valId} - ["Notes"][240]'))
+    assertEquals('Not used.', observedDf["Notes"][10], str(f'{valId} - ["Notes"][11]'))
+    assertEquals('Not used.', observedDf["Notes"][34], str(f'{valId} - ["Notes"][36]'))
+    assertEquals('Not used.', observedDf["Notes"][121], str(f'{valId} - ["Notes"][123]'))
+    assertEquals('Not used.', observedDf["Notes"][164], str(f'{valId} - ["Notes"][166]'))
+    assertEquals('stat_life_remain not used.', observedDf["Description"][121], str(f'{valId} - ["Description"][123]'))
+    assertEquals('em_area_comn_serv not used.', observedDf["Description"][164], str(f'{valId} - ["Description"][166]'))
+
+    tprint(f'Validation {valId} - Pass - Sparse check of Glossary Values is complete.')
+
 
 #TODO:
 # ----  Conditional formatting of datetime is working as expected?
@@ -763,23 +777,10 @@ if __name__ == '__main__':
         # Test Case 4 - Custom Operation - without descriptions
 
         customizeTestFileNames()
+
         executeTool4('Test Case 4 - Run with custom file name command line options.')
 
-        # validateFileExists('3.01')
-        # validateFileContainsWorksheets('3.02')
-        # validateTablesWs('3.03')
-        # validateTablesWsValues('3.04')
-        # validateGlossaryColumns('3.05')
-        # validateGlossaryLength('3.06')
-        # validateGlossaryTableNames('3.07')
-        # validateGlossaryColumnNames('3.08')
-        # validateGlossaryDataTypes('3.09')
-        # validateGlossaryDescriptionQuantity2('3.10')
-        # validateGlossaryValuesSparse2('3.11')    
-
         executeTool4('Test Case 5 - Re-Run with the exact same custom file name command line options.')
-
-        # validateFileExists('3.01')
 
         executeTool6('Test Case 6 - Run with the AI command line options.')
 

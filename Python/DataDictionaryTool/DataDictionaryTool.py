@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.08.05 03:26:34'
+dateLastUpdated = '2024.08.27 03:26:34'
 
 
 
@@ -191,6 +191,39 @@ def run_tool():
             return df[column_order]
 
 
+    def analyze_glossary(glossary):
+        # Make a copy of the glossary to avoid modifying the original one
+        print(f'Performing analysis on Glossary data...')
+        updated_glossary = glossary.copy()
+        
+        #Add the Notes column
+        updated_glossary['Notes'] = ''
+
+        # Check to see if a specific column is referenced multiple times for a given table.  If so, this could be a mis-defined or
+        # weirdly defined Foreign Key situation.  
+        suspectList = find_duplicate_indices_two_columns(glossary, ["TABLENAME", "COLNAME"])
+        for index in suspectList:
+            warning_message = "WARNING: Duplicate entry for Column within a table.  Please review this entry and correct as needed."
+            updated_glossary.at[index, 'Notes'] = warning_message
+
+        # Update the description and Notes columen when 'Include In View' is 'N'.
+        mask = updated_glossary['IncludeInView'] == 'N'
+        
+        if mask.any():
+            updated_glossary.loc[mask, 'Description'] = updated_glossary.loc[mask, 'COLNAME'] + " not used."
+            updated_glossary.loc[mask, 'Notes'] = "Not used."
+
+        notesCount = updated_glossary[updated_glossary['Notes'] != ''].shape[0]
+        if (notesCount > 0):
+            print(f'  {notesCount} Notes entries added.  Please review.')
+        else:
+            print(f'  Analysis complete with {notesCount} Notes entries added.')
+
+        return updated_glossary
+
+
+
+
     # Table Formatting Methods
     def formatMinMax(worksheet):
         name = worksheet.get_name()
@@ -335,45 +368,47 @@ def run_tool():
         return matching_rows_list
     
 
-    print("Performing analysis on Glossary data...")
-
     #Reorder columns in the Glossary.
     new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
                      'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
                      'Friendly Name', 'Description']
     glossary = reorder_dataframe_columns(glossary, new_col_order)
 
+    #Perform analysis on Glossary
+    glossary = analyze_glossary(glossary)
+
     #Add the Notes column
-    glossary['Notes'] = ''
-    notesCount = 0
+    # glossary['Notes'] = ''
+    # notesCount = 0
 
-    # Check to see if a specific column is referenced multiple times for a given table.  If so, this could be a mis-defined or
-    # weirdly defined Foreign Key situation.  
-    suspectList = find_duplicate_indices_two_columns(glossary, ["TABLENAME", "COLNAME"])
-    for index in suspectList:
-        glossary.at[index, 'Notes'] = "WARNING: Duplicate entry for Column within a table.  Please review this entry and correct as needed."
-        notesCount += 1
+    # # Check to see if a specific column is referenced multiple times for a given table.  If so, this could be a mis-defined or
+    # # weirdly defined Foreign Key situation.  
+    # suspectList = find_duplicate_indices_two_columns(glossary, ["TABLENAME", "COLNAME"])
+    # for index in suspectList:
+    #     glossary.at[index, 'Notes'] = "WARNING: Duplicate entry for Column within a table.  Please review this entry and correct as needed."
+    #     notesCount += 1
 
-    # Look for duplicate column names across the glossary, and make notes for things to look at when performing data modeling after
-    # Bronze level data ingestion.
-    duplicateColumnNames = find_duplicate_indices(glossary, "COLNAME")
-    for index in duplicateColumnNames:
-        row_data = glossary.iloc[index]
-        if not row_data['IsPrimaryKey'] and not row_data['IsForeignKey']:
-            matchingPrimaryKey = False
-            matchingRows = get_matching_rows(glossary, "COLNAME", row_data['COLNAME'])
-            for row_dict in matchingRows:
-                if row_dict['IsPrimaryKey']:
-                    matchingPrimaryKey = True
-                    break
-            if matchingPrimaryKey:
-                glossary.at[index, 'Notes'] = "Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here."
-            else:
-                glossary.at[index, 'Notes'] = "Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here."
-            notesCount += 1
+    # TODO: This functionality should be performed by a different tool outside the DD tool
+    # # Look for duplicate column names across the glossary, and make notes for things to look at when performing data modeling after
+    # # Bronze level data ingestion.
+    # duplicateColumnNames = find_duplicate_indices(glossary, "COLNAME")
+    # for index in duplicateColumnNames:
+    #     row_data = glossary.iloc[index]
+    #     if not row_data['IsPrimaryKey'] and not row_data['IsForeignKey']:
+    #         matchingPrimaryKey = False
+    #         matchingRows = get_matching_rows(glossary, "COLNAME", row_data['COLNAME'])
+    #         for row_dict in matchingRows:
+    #             if row_dict['IsPrimaryKey']:
+    #                 matchingPrimaryKey = True
+    #                 break
+    #         if matchingPrimaryKey:
+    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here."
+    #         else:
+    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here."
+    #         notesCount += 1
 
-    if (notesCount > 0):
-        print(f'  {notesCount} Notes entries added.  Please review.')
+    # if (notesCount > 0):
+    #     print(f'  {notesCount} Notes entries added.  Please review.')
 
 
     # Create Data Dictionary Excel file
