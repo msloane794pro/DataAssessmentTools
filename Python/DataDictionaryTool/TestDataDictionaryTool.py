@@ -81,6 +81,7 @@ def validateFileExists1(valId):
 def validateFileContainsWorksheets(valId):
     expectedOutputFile = f'{testFileGroups[0]}_DataDictionary_working.xlsx'
     try:
+        observedDf = pd.read_excel(expectedOutputFile, sheet_name='Info', dtype=str, keep_default_na=False)
         observedDf = pd.read_excel(expectedOutputFile, sheet_name='Tables', dtype=str, keep_default_na=False)
         observedDf = pd.read_excel(expectedOutputFile, sheet_name='Glossary', dtype=str, keep_default_na=False)
         observedDf = pd.read_excel(expectedOutputFile, sheet_name='_Full Table List', dtype=str, keep_default_na=False)
@@ -705,6 +706,7 @@ def executeTool4(message):
               --tableList {testFileGroups[0]}_RLOT.xlsx \
               --tableChars {testFileGroups[0]}_RTC.xlsx \
               --columnStatsRoot {testFileGroups[0]}_RCS \
+              --databaseInfo {testFileGroups[0]}_Info.xlsx \
               --DDFile {testFileGroups[0]}_DD_working.xlsx \
                 ')
 

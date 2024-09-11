@@ -23,7 +23,7 @@ warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.08.27 03:26:34'
+dateLastUpdated = '2024.09.11 03:26:34'
 
 
 
@@ -167,6 +167,20 @@ def run_tool():
         includedTables['AlreadyInDataHub'] = fixed_string_n
         newOrder = ['TableName', 'AlreadyInDataHub', 'Description']
         includedTables = includedTables[newOrder]
+
+    # Bring in Database Info if the file exists.
+    if len(databaseInfoFile) > 0:
+        print("Adding Database Info...")
+        print(f"  Reading in database info from: {databaseInfoFile}")
+
+        try:
+            databaseInfo = pd.read_excel(databaseInfoFile, dtype=str, keep_default_na=False)
+        except Exception as e:
+            if "Permission denied" in str(e):
+                print(f"\nERROR: {databaseInfoFile} is currently open in Excel.  Please close the file and try again.")
+            else:
+                print(f"\nERROR: Opening {databaseInfoFile} raised an error:  {str(e)}")
+            sys.exit()
 
 
     def reorder_dataframe_columns(df, column_order):
@@ -431,6 +445,7 @@ def run_tool():
         'align': 'center',
         'border': 1})
 
+    createFormattedSheet(writer, databaseInfo, 'Info')
     createFormattedSheet(writer, includedTables, 'Tables')
     createFormattedSheet(writer, glossary, 'Glossary')
     createFormattedSheet(writer, tableList, '_Full Table List')
@@ -478,6 +493,7 @@ if __name__ == '__main__':
         parser.add_argument('--tableChars', type=str, default = None, help='Custom operation: Excel file name for table characteristics data.')
         parser.add_argument('--columnStatsRoot', type=str, default = None, help='Custom operation: Base name for the Excel files for column statistics.')
         parser.add_argument('--tableDescriptions', type=str, default = None, help='Custom operation: File containing textual descriptions for tables.')
+        parser.add_argument('--databaseInfo', type=str, default = None, help='File containing information about the database.')
         parser.add_argument('--DDFile', type=str, default = None, help='Custom operation: Output file name.')
         
         args = parser.parse_args()
@@ -485,6 +501,7 @@ if __name__ == '__main__':
         tableListFile = args.tableList
         tableCharsFile = args.tableChars
         tableDescriptionFile = args.tableDescriptions
+        databaseInfoFile = args.databaseInfo
         
         if tableDescriptionFile is None and args.database is None:
             print("Warning: Table Descriptions file is not specified.  No descriptions will be added to the Data Dictionary.")
@@ -505,6 +522,7 @@ if __name__ == '__main__':
             columnStatsFiles = glob.glob(args.database + '_ColumnStats*.xlsx')
             tableDescriptionFile = args.database + '_Descriptions.xlsx'
             dataDictionaryFile = args.database + '_DataDictionary_working.xlsx'
+            databaseInfoFile = args.database + '_Info.xlsx'
         else:
             if args.DDFile is None:
                 errorMessage = "\nError.  Missing DDFile or database param."
@@ -525,6 +543,14 @@ if __name__ == '__main__':
                 tableDescriptionFile = ''
             else: 
                 print(f"Table Descriptions file ({tableDescriptionFile}) is present and will be used to add table descriptions.")
+
+        if databaseInfoFile != "" :
+            if not os.path.isfile(databaseInfoFile):
+                print("ERROR: Database Info file is not found.  Please create this file.")
+                sys.exit()
+            else: 
+                print(f"Database Info file ({databaseInfoFile}) is present and content will be added to the Data Dictionary.")
+
 
         if dataDictionaryFile is not None:
             outputFileNumber = 0
