@@ -14,7 +14,7 @@ import datetime
 import re
 
 # Define operational constants.
-dateLastUpdated = '2024.08.05 03:26:34'
+dateLastUpdated = '2024.09.03 03:26:34'
 # ai_model_base_url='https://api.hpc.inl.gov/llm/v1'
 # ai_model_api_key='5mdim-8qu4h-pq2g7-ivhl6-memyi'
 selected_ai_model = 0
@@ -87,6 +87,7 @@ Any substring within the element name that matches an English word should be con
 If an element name contains a substring that matches a well known English abbreivation, the full text of the abbreviated item should be considered one of the seperated words.
 For example the element name HORSEDR should result in the following: Horse Doctor
 Interpret the use of camel case or Pascal case within the element name as defining a word boundary.
+For example the element name AssessingMissionCenterName would be separated into the following words: Assessing Mission Center Name
 Interpret the `_` character within a data element name as defining a word boundary.
 For example ApprRequestForm_ID would be separated into the following words: Appr Request Form ID
 Another example is Escort_ID would be separated into the following words: Escort ID
