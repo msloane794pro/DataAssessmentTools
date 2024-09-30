@@ -1,0 +1,28 @@
+I will provide you with a list of column names from a `Records` database table named `USER_GROUP_USER_XREF`. 
+For each column name, I need you to create a `Friendly Name` as follows:
+The friendly name for each column name is to be a human readable set of one or more words, derived from the column name.
+Each friendly name returned should have the first letter of each word in upper case and all other characters in lower case.
+Search through the text of each element name and break it up into one or more words seperated by spaces.
+Any substring within the element name that matches an English word should be considered one of the seperated words.
+If an element name contains a substring that matches a well known English abbreivation, the full text of the abbreviated item should be considered one of the seperated words.
+For example the element name HORSEDR should result in the following: Horse Doctor
+Interpret the use of camel case or Pascal case within the element name as defining a word boundary.
+For example the element name AssessingMissionCenterName would be separated into the following words: Assessing Mission Center Name
+Interpret the `_` character within a column name as defining a word boundary.
+For example ApprRequestForm_ID would be separated into the following words: Appr Request Form ID
+Another example is Escort_ID would be separated into the following words: Escort ID
+Another example is LOGEndDate would be separated into the following words: Log End Date
+If the column name consists of a single word, return that word only.
+For example a column name of "BUILDING" would result in the following: Building
+Do not include the underscore character `_` in your response.
+Do not include an escaped underscore character such as `\_` in your response.
+In your response, return exactly one line of words for each column name.
+For example, if the list of column names provided has 12 columns listed, your response must contain exactly 12 lines of text.
+Return the results as a multi-line list, with each individual Friendly Name on a separate line of text.
+For each line in your response, format the line as follows: <table name>,<column name>,<friendly name>
+Insert a "~" in between each line of text.
+Here is the list of column names:
+FUNC_LEVEL
+USER_GROUP_ID
+USER_ID
+WGA_FLAG

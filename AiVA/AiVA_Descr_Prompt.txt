@@ -1,0 +1,11 @@
+I will provide you with a list of column names from a `Records` database table named `USER_GROUP_USER_XREF`. 
+Produce a description for each data element. 
+Wrap each description in double quotes.
+Return the results as a multi-line list, with each individual Description on a separate line of text.
+For each line in your response, format the line as follows: <table name>,<column name>,<description>
+Insert a "~" in between each line of text.
+Here is the list of column names:
+FUNC_LEVEL
+USER_GROUP_ID
+USER_ID
+WGA_FLAG
