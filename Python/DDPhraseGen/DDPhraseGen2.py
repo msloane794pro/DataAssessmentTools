@@ -3,46 +3,17 @@ import os
 from time import sleep
 import pandas as pd
 import numpy as np
+from datetime import datetime
+import csv
+from io import StringIO
 
 from OpenAiDDPhraseGen import OpenAiDDPhraseGen
+from OpenAiDDPhraseGen import PhraseType as pt
 
 tableNameSubstPattern = '~~~tableName~~~'
 dbDescrSubstPattern = '~~~dbDescrSubst~~~'
 
-_frientlyNamePrompt = f"""I will provide you with a list of column names from a `{dbDescrSubstPattern}` database table named `{tableNameSubstPattern}`. 
-For each column name, I need you to create a `Friendly Name` as follows:
-The friendly name for each column name is to be a human readable set of one or more words, derived from the column name.
-Each friendly name returned should have the first letter of each word in upper case and all other characters in lower case.
-Search through the text of each element name and break it up into one or more words seperated by spaces.
-Any substring within the element name that matches an English word should be considered one of the seperated words.
-If an element name contains a substring that matches a well known English abbreivation, the full text of the abbreviated item should be considered one of the seperated words.
-For example the element name HORSEDR should result in the following: Horse Doctor
-Interpret the use of camel case or Pascal case within the element name as defining a word boundary.
-For example the element name AssessingMissionCenterName would be separated into the following words: Assessing Mission Center Name
-Interpret the `_` character within a column name as defining a word boundary.
-For example ApprRequestForm_ID would be separated into the following words: Appr Request Form ID
-Another example is Escort_ID would be separated into the following words: Escort ID
-Another example is LOGEndDate would be separated into the following words: Log End Date
-If the column name consists of a single word, return that word only.
-For example a column name of "BUILDING" would result in the following: Building
-Do not include the underscore character `_` in your response.
-Do not include an escaped underscore character such as `\_` in your response.
-In your response, return exactly one line of words for each column name.
-For example, if the list of column names provided has 12 columns listed, your response must contain exactly 12 lines of text.
-Return the results as a multi-line list, with each individual Friendly Name on a separate line of text.
-For each line in your response, format the line as follows: <table name>,<column name>,<friendly name>
-Insert a "~" in between each line of text.
-Here is the list of column names:
-"""
 
-_descriptionPrompt = f"""I will provide you with a list of column names from a `{dbDescrSubstPattern}` database table named `{tableNameSubstPattern}`. 
-Produce a description for each data element. 
-Wrap each description in double quotes.
-Return the results as a multi-line list, with each individual Description on a separate line of text.
-For each line in your response, format the line as follows: <table name>,<column name>,<description>
-Insert a "~" in between each line of text.
-Here is the list of column names:
-"""
 
 def check_file_extension(filename):
     if not filename.endswith(".xlsx"):
@@ -234,28 +205,8 @@ def create_column_descriptions_df(filename):
 #     return new_dataframe
 
 
-def dataframe_to_dict(df):
-    return df.to_dict('list')
-
-
-def write_data_to_unique_file(data_string, output_filename_base):
-    # Initialize the counter for the filename
-    counter = 0
-    # Define the format for the numeric part of the filename
-    number_format = "{:03d}"
-    # Construct the initial filename
-    output_filename = f"{output_filename_base}_{number_format.format(counter)}.txt"
-    
-    # Check if the file exists and increment the counter until a unique filename is found
-    while os.path.exists(output_filename):
-        counter += 1
-        output_filename = f"{output_filename_base}_{number_format.format(counter)}.txt"
-    
-    # Write the data string to the output file
-    with open(output_filename, 'w') as file:
-        file.write(data_string)
-    
-    return output_filename
+# def dataframe_to_dict(df):
+#     return df.to_dict('list')
 
 
 def create_unique_filename(desired_filename):
@@ -270,119 +221,30 @@ def create_unique_filename(desired_filename):
         # Define the format for the numeric part of the filename
         number_format = "{:03d}"
         # Construct the initial filename
-        output_filename = f"{fileNameBase}_{number_format.format(counter)}.{fileNameExtension}"
+        output_filename = f"{fileNameBase}_{number_format.format(counter)}{fileNameExtension}"
         
         # Check if the file exists and increment the counter until a unique filename is found
         while os.path.exists(output_filename):
             counter += 1
-            output_filename = f"{fileNameBase}_{number_format.format(counter)}.{fileNameExtension}"
+            output_filename = f"{fileNameBase}_{number_format.format(counter)}{fileNameExtension}"
        
     return output_filename
 
 
-def getTableList(df):
-    # Check if 'TableName' column exists
-    if 'TableName' not in df.columns:
-        raise ValueError("DataFrame must have a 'TableName' column.")
-    
-    # Get the list of table names from the 'TableName' column
-    table_list = df['TableName'].dropna().astype(str).tolist()
-    
-    return table_list
-
-
-def getColumnNameList(df, tableName):
-    # Check if 'TABLENAME' and 'COLNAME' columns exist
-    if 'TABLENAME' not in df.columns or 'COLNAME' not in df.columns:
-        raise ValueError("DataFrame must have 'TABLENAME' and 'COLNAME' columns.")
-
-    # Filter the DataFrame for rows where 'TABLENAME' matches the tableName parameter
-    filtered_df = df[df['TABLENAME'] == tableName]
-
-    # Get the list of column names from the 'COLNAME' column
-    column_name_list = filtered_df['COLNAME'].dropna().astype(str).tolist()
-
-    return column_name_list
-
-
-def generateFriendlyNamePrompts(tables_df, glossary_df, fileNameBase, dbDescription):
-    tableList = getTableList(tables_df)
-
-    # Iterate through each table name in the table list
-    for tableName in tableList:
-        genFileName = fileNameBase + tableName +'_fName_Prompt'
-        # Call getColumnNameList for each table name and pass in the glossary_df
-        column_name_list = getColumnNameList(glossary_df, tableName)       
-        prompt = _frientlyNamePrompt.replace(dbDescrSubstPattern, dbDescription).replace(tableNameSubstPattern, tableName)
-        promptText = prompt + '\n'.join(column_name_list) + '\n'
-        fileName = write_data_to_unique_file(promptText, genFileName)
-        print(f'{fileName} generated.')
-
-    return 
-    
-
-
-def generateDescriptionPrompts(tables_df, glossary_df, fileNameBase, dbDescription):
-    tableList = getTableList(tables_df)
-
-    # Iterate through each table name in the table list
-    for tableName in tableList:
-        genFileName = fileNameBase + tableName +'_Description_Prompt'
-        # Call getColumnNameList for each table name and pass in the glossary_df
-        column_name_list = getColumnNameList(glossary_df, tableName)       
-        prompt = _descriptionPrompt.replace(dbDescrSubstPattern, dbDescription).replace(tableNameSubstPattern, tableName)
-        promptText = prompt + '\n'.join(column_name_list) + '\n'
-        fileName = write_data_to_unique_file(promptText, genFileName)
-        print(f'{fileName} generated.')
-    return
-
-
-
-def generateTemplateDescriptionsFile(tables_df, glossary_df, fileNameBase):
-    # Create 'table_descriptions' DataFrame
-    table_descriptions = tables_df[['TableName']].copy()
-    table_descriptions['AlreadyInDataHub'] = 'N'
-    table_descriptions['Description'] = ''
-    
-    # Create 'column_descriptions' DataFrame
-    column_descriptions = glossary_df[['TABLENAME', 'COLNAME', 'Friendly Name', 'Description']].copy()
-    column_descriptions['IncludeInView'] = 'Y'
-    column_descriptions.rename(columns={'TABLENAME': 'TableName', 'COLNAME': 'ColumnName'}, inplace=True)
-    column_descriptions = column_descriptions[['TableName', 'ColumnName', 'Friendly Name', 'IncludeInView', 'Description']]
-    
-    # Define the base output filename
-    output_filename = f"{fileNameBase}_Descriptions.xlsx"
-    
-    # Check if file already exists and modify the filename accordingly
-    nnn = 0
-    while os.path.isfile(output_filename):
-        output_filename = f"{fileNameBase}_Descriptions_{nnn:03d}.xlsx"
-        nnn += 1
-    
-    # Create a Pandas Excel writer using XlsxWriter as the engine
-    with pd.ExcelWriter(output_filename, engine='xlsxwriter') as writer:
-        # Step 3: Write 'table_descriptions' DataFrame to a worksheet named "Table Descriptions"
-        table_descriptions.to_excel(writer, sheet_name='Table Descriptions', index=False)
-        
-        # Step 4: Write 'column_descriptions' DataFrame to a worksheet named "Column Descriptions"
-        column_descriptions.to_excel(writer, sheet_name='Column Descriptions', index=False)
-    
-    # Return the final output filename
-    return output_filename
-
-
-def generateAll(pgen, input_table_descrs, input_column_descrs, output_substring):
+def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, output_substring):
+    print('Input Status:')
+    displayColumnResults(input_column_descrs)
     current_column_descrs = input_column_descrs
     continue_looping = True
 
     try:
         while continue_looping:
-            complete, updated_column_descrs = iterateAcrossAiModels(pgen, input_table_descrs, current_column_descrs)
-            current_column_descrs = updated_column_descrs
+            complete, updated_column_descrs = iterateAcrossAiModels(pgen, db_Description, input_table_descrs, current_column_descrs)
+            current_column_descrs = updated_column_descrs.copy()
             continue_looping = False
             if not complete:  
                 print("Results are not complete after using all AI Models.")         
-                user_input = input(f'--Enter "R" if you would like to retry with all AI Models again. Enter "X" to Exit.').strip().lower()
+                user_input = input(f'----Enter "R" | "S" | "Q" - "R" to retry with all AI Models again. "S" to Save and exit. "Q" to quit immediately.').strip().lower()
                 if user_input == 'r':
                     continue_looping = True
                 if user_input == 'q':
@@ -397,50 +259,305 @@ def generateAll(pgen, input_table_descrs, input_column_descrs, output_substring)
     return
 
 
-def iterateAcrossAiModels(pgen, input_table_descrs, input_column_descrs):
+def iterateAcrossAiModels(pgen, dbDescr, input_table_descrs, input_column_descrs):
     aiModels = pgen.getModelNames()
     print(f'AI Models available: {aiModels}')
 
-    current_column_descrs = input_column_descrs
+    current_column_descrs = input_column_descrs.copy()
 
     for i in reversed(range(len(aiModels))):
         continue_looping = True
         while continue_looping:
             print (f'Using {aiModels[i]}')
-            updated_column_descrs = iterateAcrossTables(pgen, i, input_table_descrs, current_column_descrs)
-            current_column_descrs = updated_column_descrs
+            updated_column_descrs = iterateAcrossTables(pgen, i, dbDescr, input_table_descrs, current_column_descrs)
+            current_column_descrs = updated_column_descrs.copy()
+            print(f'Results after Table Cycle using {aiModels[i]}:')
             complete = displayColumnResults(current_column_descrs)
             continue_looping = False
             if not complete: 
                 print("  Results are not complete.")          
-                user_input = input(f'  --Enter "R" or "N" - "R" to retry with the current AI Model {aiModels[i]}; "N" to go to the next AI Model.').strip().lower()
+                user_input = input(f'  --Enter "R" | "N" | "Q" - "R" to retry AI Model {aiModels[i]}; "N" to go to the next AI Model; "Q" to quit.').strip().lower()
                 if user_input == 'r':
                     continue_looping = True
                 if user_input == 'q':
                     print('Quitting without writing output file...')
                     exit()
+
     return complete, current_column_descrs
 
 
-def iterateAcrossTables(pgen, aiModelIndex, input_table_descrs, input_column_descrs):
+def iterateAcrossTables(pgen, aiModelIndex, dbDescr, input_table_descrs, input_column_descrs):
     tables = input_table_descrs['TableName'].tolist()
 
     current_column_descrs = input_column_descrs
 
+    numTables = len(tables)
+    tableNum = 1
+
     for table in tables:
-        #print (table)
-        updated_column_descrs = processTableData(pgen, aiModelIndex, current_column_descrs)
-        current_column_descrs = updated_column_descrs
+        print (f'({tableNum} of {numTables}) Generating phrases for table: {table}...')
+        tableNum += 1
+        updated_column_descrs = processTableData(pgen, aiModelIndex, dbDescr, table, current_column_descrs)
+        current_column_descrs = updated_column_descrs.copy()
+        
+    return current_column_descrs
+
+
+def processTableData(pgen, aiModelIndex, dbDescr, table_name, column_descrs):
+    updated_column_descrs = column_descrs.copy()
+    pgen.setModel(aiModelIndex)
+
+    filtered_df = column_descrs[column_descrs['TableName'] == table_name]
+    elementList = filtered_df['ColumnName'].tolist()
+    numElements = len(elementList)
+
+    if (check_for_empty_column_values(filtered_df, "Friendly Name")):
+        print(f'...Friendly Name...({numElements} elements)')
+        sessionType = pt.FRIENDLYNAME
+        current_time = datetime.now()
+        sessionId = f'{table_name}_fnames_{current_time.strftime("%Y%m%d%H%M%S")}'
+        responseText = pgen.sendSinglePrompt(sessionId, sessionType, dbDescr, table_name, elementList)
+        responseList = splitAndFilterLines(responseText)
+        if len(responseList) != len(elementList):
+            print(f'   ~~~Incorrect number of lines in Friendly name response.  {len(elementList)} expected, {len(responseList)} received.')
+        else:
+            try:
+                fnameDf = create_fname_dataframe(responseList)
+                updated_column_descrs = update_friendly_names(updated_column_descrs, fnameDf)
+            except:
+                print(f'   ~~~Incorrect formatting in Friendly name response.  {len(responseList)} received, but not in proper CSV format.')
+
+        csvFileName = f'.\\respcsv\\{sessionId}.csv'
+        write_stringList_to_file(csvFileName, responseList)
+        sleep(1)
+    else:
+        print(f'   Friendly Names already filled in!  Yay!')
+
+    if (check_for_empty_column_values(filtered_df, "Description")):
+        print(f'...Description...({numElements} elements)')
+        sessionType = pt.DESCRIPTION
+        current_time = datetime.now()
+        sessionId = f'{table_name}_descrs_{current_time.strftime("%Y%m%d%H%M%S")}'
+        responseText = pgen.sendSinglePrompt(sessionId, sessionType, dbDescr, table_name, elementList)
+        responseList = splitAndFilterLines(responseText)
+        if len(responseList) != len(elementList):
+            print(f'   ~~~Incorrect number of lines in Description response.  {len(elementList)} expected, {len(responseList)} received.')
+        else:
+            try:
+                descrDf = create_descr_dataframe(responseList)
+                updated_column_descrs = update_descriptions(updated_column_descrs, descrDf)
+            except:
+                print(f'   ~~~Incorrect formatting in Description response.  {len(responseList)} received, but not in proper CSV format.')
+
+        csvFileName = f'.\\respcsv\\{sessionId}.csv'
+        write_stringList_to_file(csvFileName, responseList)
+        sleep(1)
+    else:
+        print(f'   Descriptions already filled in!  Yay!')      
+
     return updated_column_descrs
 
 
-def processTableData(pgen, aiModelIndex, column_descrs):
-    updated_column_descrs = column_descrs
-    return updated_column_descrs
+def update_friendly_names(column_descrs, fnameDf):
+    # Perform a left join on the 'TableName' and 'ColumnName' columns
+    merged_df = column_descrs.merge(fnameDf[['TableName', 'ColumnName', 'Friendly Name']], 
+                                    on=['TableName', 'ColumnName'], 
+                                    how='left', 
+                                    suffixes=('', '_fnameDf'))
+
+    # Update the 'Friendly Name' column in column_descrs with the values from fnameDf
+    merged_df['Friendly Name'] = merged_df['Friendly Name_fnameDf'].combine_first(merged_df['Friendly Name'])
+
+    # Drop the merged 'Friendly Name_fnameDf' column as it's no longer needed
+    merged_df.drop(columns=['Friendly Name_fnameDf'], inplace=True)
+    
+    return merged_df
+
+
+def update_descriptions(column_descrs, descrDf):
+    # Perform a left join on the 'TableName' and 'ColumnName' columns
+    merged_df = column_descrs.merge(descrDf[['TableName', 'ColumnName', 'Description']], 
+                                    on=['TableName', 'ColumnName'], 
+                                    how='left', 
+                                    suffixes=('', '_descrDf'))
+
+    # Update the 'Description' column in column_descrs with the values from descrDf
+    merged_df['Description'] = merged_df['Description_descrDf'].combine_first(merged_df['Description'])
+
+    # Drop the merged 'Description_descrDf' column as it's no longer needed
+    merged_df.drop(columns=['Description_descrDf'], inplace=True)
+    
+    return merged_df
+
+
+def check_for_empty_column_values(df: pd.DataFrame, column_name: str) -> bool:
+    # Check if the column exists in the DataFrame
+    if column_name not in df.columns:
+        raise ValueError(f"Column '{column_name}' does not exist in the DataFrame.")
+    
+    # Check if all values in the column are NaN or empty
+    all_nan_or_empty = df[column_name].isna() | (df[column_name].astype(str).str.strip() == '')
+    
+    # Return True if all values are NaN or empty, otherwise return False
+    return all_nan_or_empty.all()
+
+
+def create_fname_dataframe(input_list):
+    # Define a helper function to clean the 'Friendly Name' field
+    def clean_friendly_name(friendly_name):
+        # Strip leading and trailing double-quote and single-quote characters
+        friendly_name = friendly_name.strip('"').strip("'")
+        # Replace underscore characters
+        friendly_name = friendly_name.replace('_', '')
+        return friendly_name
+
+    # Initialize lists to store the data for each column
+    table_names = []
+    column_names = []
+    friendly_names = []
+
+    # Process each string in the input list
+    for item in input_list:
+        # Check if the item has exactly two commas
+        if item.count(',') == 2:
+            table_name, column_name, friendly_name = item.split(',')
+            table_names.append(table_name)
+            column_names.append(column_name)
+            cleaned_friendly_name = clean_friendly_name(friendly_name)
+            friendly_names.append(cleaned_friendly_name)
+        else:
+            raise ValueError("Friendly Name Input list not formatted correctly: {item}")
+
+    # Create a DataFrame from the lists
+    df = pd.DataFrame({
+        'TableName': table_names,
+        'ColumnName': column_names,
+        'Friendly Name': friendly_names
+    })
+
+    return df
+
+
+def create_descr_dataframe(input_list):
+    # Define a helper function to clean the 'Friendly Name' field
+    def clean_descriptions(description):
+        # Strip leading and trailing double-quote and single-quote characters
+        description = description.strip('"').strip("'")
+        # Replace underscore characters
+        description = description.replace('_', '')
+        return description
+
+    # Initialize lists to store the data for each column
+    table_names = []
+    column_names = []
+    descriptions = []
+
+    # Process each string in the input list
+    for item in input_list:
+        # Use csv.reader to correctly split the string while respecting quotes
+        f = StringIO(item)
+        reader = csv.reader(f, delimiter=',', quotechar='"', skipinitialspace=True)
+        parsed_item = next(reader)
+        
+        # Check if the parsed item has exactly three elements
+        if len(parsed_item) == 3:
+            table_name, column_name, description = parsed_item
+            table_names.append(table_name)
+            column_names.append(column_name)
+            cleaned_description = clean_descriptions(description)
+            descriptions.append(cleaned_description)
+        else:
+            raise ValueError(f"Description Input list not formatted correctly: {item}")
+
+    # Create a DataFrame from the lists
+    df = pd.DataFrame({
+        'TableName': table_names,
+        'ColumnName': column_names,
+        'Description': descriptions
+    })
+
+    return df
+
+
+def splitAndFilterLines(multiLineString):
+    # List of unwanted substrings
+    unwanted_substrings = [
+        "Here is a list of friendly names",
+        "Here is the list of friendly names",
+        "here is the list of friendly names",
+        "Here's the list of friendly names",
+        "here's the list of friendly names",
+        "Here are the friendly names",
+        "Here are the list of friendly names",
+        "here are the list of friendly names",
+        "here are their respective friendly names",
+        "friendly names are as follows",
+        "Below is the list of friendly names",
+        "below is the list of friendly names",
+        "The list of friendly names for each data element name is",
+        "The friendly names for the data element names are as follows",
+        "Here is the output with friendly names",
+        "Here is a description for each data element",
+        "Here is the description for each data element",
+        "Please find the descriptions below",
+        "Here is the list of descriptions for each data element",
+        "This list is derived from the",
+        "The response would be as follows",
+        "The list of friendly names for the",
+        "Here's a description for each data element",
+        "To provide descriptions for each data element based on the column names",
+        "Here is the list of descriptions for each column",
+        "Below is a description for each data element",
+        "Here is the list of descriptions",
+        "Below is a list of friendly names",
+        "Here is the description of each data element",
+        "Here is the list of column names with their respective friendly names",
+        "each individual Friendly Name on a separate line of text",
+        "Here is a multi-line list of the column names",
+        "The format you provided is not a standard data interchange format",
+        "Here is a potential description for each data element",
+        "Here is the friendly name for each column name",
+        "Here's the list of descriptions for each data element",
+        "The following is a list of friendly names",
+        "The given task is a request to create a friendly name for each column name",
+        "These friendly names are created by interpreting",
+        "Please note that the friendly names are generated",
+        "Here's the description for each data element",
+        "for a friendly name to be created",
+        "THE FRIENDLY NAMES WOULD BE",
+        "here are the descriptions for each data element",
+        "Please note that the provided instructions",
+        "'''",
+        "```"
+    ]
+    
+    # Convert unwanted substrings to lowercase
+    unwanted_substrings_lower = [unwanted.lower() for unwanted in unwanted_substrings]
+    
+    # Split the multi-line string into a list and filter out blank lines and lines containing any unwanted substrings (case-insensitive)
+    lines_list = [
+        line for line in multiLineString.splitlines()
+        if line.strip() and not any(unwanted in line.lower() for unwanted in unwanted_substrings_lower)
+    ]
+    
+    return lines_list
+
+
+def write_stringList_to_file(file_path, stringList):
+    directory_name = "respcsv"
+
+    # Check if the directory exists
+    if not os.path.exists(directory_name):
+        # If it does not exist, create the directory
+        os.makedirs(directory_name)
+        
+    with open(file_path, 'w') as file:
+        for stringItem in stringList:
+            file.write(stringItem + '\n')
 
 
 def displayColumnResults(column_descriptions):
-    print(f'  Current Column Results:')
+    #print(f'  Current Column Results:')
     columns = column_descriptions['ColumnName'].tolist()
     friendlyNames = column_descriptions['Friendly Name'].tolist()
     descriptions = column_descriptions['Description'].tolist()
@@ -448,12 +565,12 @@ def displayColumnResults(column_descriptions):
     print(f'  Number of Columns: {columnCount}')
     populatedFriendlyNameCount = countNonEmptyNonNanItems(friendlyNames)
     populatedFriendlynamePercent = 100 * (populatedFriendlyNameCount / columnCount)
-    print(f'  Number of filled-in Friendly Names: {populatedFriendlyNameCount} ({populatedFriendlynamePercent} %)')
+    print(f'  Number of filled-in Friendly Names: {populatedFriendlyNameCount} ({populatedFriendlynamePercent:.1f} %)')
     populatedDescriptionCount = countNonEmptyNonNanItems(descriptions)
     populatedDescriptionPercent = 100 * (populatedDescriptionCount / columnCount)
-    print(f'  Number of filled-in Descriptions: {populatedDescriptionCount} ({populatedDescriptionPercent} %)')
+    print(f'  Number of filled-in Descriptions: {populatedDescriptionCount} ({populatedDescriptionPercent:.1f} %)')
     totalPercentComplete = 100 * (populatedFriendlyNameCount + populatedDescriptionCount) / (2 * columnCount)
-    print(f'  Total percent complete: {totalPercentComplete} %')
+    print(f'  Total percent complete: {totalPercentComplete:.1f} %')
 
     if (populatedFriendlyNameCount + populatedDescriptionCount) < (2 * columnCount):
         return False
@@ -524,7 +641,7 @@ def main():
     #print(column_descriptions)
 
     pgen = OpenAiDDPhraseGen()
-    generateAll(pgen, table_descriptions, column_descriptions, output_substring)
+    generateAll(pgen, db_Description, table_descriptions, column_descriptions, output_substring)
     print('Done.')
 
 

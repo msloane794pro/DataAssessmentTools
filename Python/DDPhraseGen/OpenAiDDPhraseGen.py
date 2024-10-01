@@ -14,9 +14,7 @@ import datetime
 import re
 
 # Define operational constants.
-dateLastUpdated = '2024.09.03 03:26:34'
-# ai_model_base_url='https://api.hpc.inl.gov/llm/v1'
-# ai_model_api_key='5mdim-8qu4h-pq2g7-ivhl6-memyi'
+dateLastUpdated = '2024.09.19 03:26:34'
 selected_ai_model = 0
 tableNameSubstPattern = '~~~tableName~~~'
 dbDescrSubstPattern = '~~~dbDescrSubst~~~'
@@ -78,9 +76,18 @@ Do not include any escaped double quote characters in your response.
 Do not include any escaped underscore characters (\_) in your response.
 """    
 
-    _friendlyNamesPrompt = f"""I will provide you with a list of names of data elements within a database table named `{tableNameSubstPattern}`. 
-For each data element name, I need you to create a `Friendly Name` as follows:
-The friendly name for each data element name is to be a human readable set of one or more words, derived from the data element name.
+    _descriptionPrompt2 = f"""I will provide you with a list of column names from a `{dbDescrSubstPattern}` database table named `{tableNameSubstPattern}`. 
+Produce a description for each data element based upon the . 
+Wrap each description in double quotes.
+Return the results as a multi-line list, with each individual Description on a separate line of text.
+For each line in your response, format the line as follows: <table name>,<column name>,<description>
+Do not include Python code in your response.
+Here is the list of column names:
+"""    
+
+    _friendlyNamesPrompt = f"""I will provide you with a list of column names from a `{dbDescrSubstPattern}` database table named `{tableNameSubstPattern}`. 
+For each column name, I need you to create a `Friendly Name` as follows:
+The friendly name for each column name is to be a human readable set of one or more words, derived from the column name.
 Each friendly name returned should have the first letter of each word in upper case and all other characters in lower case.
 Search through the text of each element name and break it up into one or more words seperated by spaces.
 Any substring within the element name that matches an English word should be considered one of the seperated words.
@@ -88,22 +95,23 @@ If an element name contains a substring that matches a well known English abbrei
 For example the element name HORSEDR should result in the following: Horse Doctor
 Interpret the use of camel case or Pascal case within the element name as defining a word boundary.
 For example the element name AssessingMissionCenterName would be separated into the following words: Assessing Mission Center Name
-Interpret the `_` character within a data element name as defining a word boundary.
+Interpret the `_` character within a column name as defining a word boundary.
 For example ApprRequestForm_ID would be separated into the following words: Appr Request Form ID
 Another example is Escort_ID would be separated into the following words: Escort ID
 Another example is LOGEndDate would be separated into the following words: Log End Date
-If the data element name consists of a single word, return that word only.
-For example a data element name of "BUILDING" would result in the following: Building
+If the column name consists of a single word, return that word only.
+For example a column name of "BUILDING" would result in the following: Building
 Do not include the underscore character `_` in your response.
 Do not include an escaped underscore character such as `\_` in your response.
-In your response, return exactly one line of words for each data element name.
-In your response, each friendly name must be on a seperate line of text.
-For example, if the list of data element names provided has 12 data elements listed, your response must contain exactly 12 lines of text.
-Do not include any punctuation or numbering in your response.
-Do not include the original element name in your response.
-Only return the list of friendly names, and do not return any introductory text.
-Here are the list of data element names:
+In your response, return exactly one line of words for each column name.
+For example, if the list of column names provided has 12 columns listed, your response must contain exactly 12 lines of text.
+Return the results as a multi-line list, with each individual Friendly Name on a separate line of text.
+For each line in your response, format the line as follows: <table name>,<column name>,<friendly name>
+Do not include Python code in your response.
+Here is the list of column names:
 """
+
+
 
 
     def __init__(self):       
@@ -187,6 +195,16 @@ AI_MODEL_API_KEY=Insert your API key here
             raise SystemError(e)
 
 
+    def sendSinglePrompt(self, sessionId, sessionType, dbDescr, tableName, elementList):
+        userMessageText = self.createSingleMessageText(sessionId, sessionType, dbDescr, tableName, elementList)
+        messages = [self.getSystemMessage(), self.constructUserMessage(userMessageText)]
+        response = self._chat_completion_request(messages, sessionId)
+        responseText = response.choices[0].message.content       
+        self.log_transcript_message(sessionId, f'\nResponse received from {self._modelName}:\n{responseText}\n\n\n')
+        return responseText
+
+
+
     def sendSessionPrompt(self, sessionId, sessionType, dbDescr, tableName, elementList):
         userMessageText = self.createSessionMessageText(sessionId, sessionType, dbDescr, tableName, elementList)
         messages = [self.getSystemMessage(), self.constructUserMessage(userMessageText)]
@@ -209,9 +227,22 @@ AI_MODEL_API_KEY=Insert your API key here
         else:
             promptString = self._friendlyNamesPrompt.replace(tableNameSubstPattern, tableName)
 
-        
-
         promptContent = introText + promptString + elementListString
+        self.log_transcript_message(sessionId, promptContent)
+
+        return (promptContent)
+
+
+    def createSingleMessageText(self, sessionId, sessionType, dbDescr, tableName, elementList):
+        #Convert list to string with seperate lines for each item in list
+        elementListString = "\n".join(str(x) for x in elementList)
+
+        if sessionType == PhraseType.DESCRIPTION:
+            promptString = self._descriptionPrompt2.replace(dbDescrSubstPattern, dbDescr).replace(tableNameSubstPattern, tableName)
+        else:
+            promptString = self._friendlyNamesPrompt.replace(dbDescrSubstPattern, dbDescr).replace(tableNameSubstPattern, tableName)
+
+        promptContent = promptString + elementListString
         self.log_transcript_message(sessionId, promptContent)
 
         return (promptContent)
@@ -233,8 +264,15 @@ AI_MODEL_API_KEY=Insert your API key here
     
 
     def log_transcript_message(self, transcript_id, message):
+        directory_name = "transcript"
+
+        # Check if the directory exists
+        if not os.path.exists(directory_name):
+            # If it does not exist, create the directory
+            os.makedirs(directory_name)
+        
         # Define the file name
-        file_name = f"{transcript_id}_transcript.txt"
+        file_name = f'.\\{directory_name}\\{transcript_id}_transcript.txt'
 
         # Check if the file exists, if not create it
         if not os.path.isfile(file_name):
