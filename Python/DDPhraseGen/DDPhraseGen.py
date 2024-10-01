@@ -1,7 +1,7 @@
 ### Data Dictionary Phrase Generator
-# Tool to create Friendly Names and Descriptions of data elements defined in a data dictionary.
-# Utilizes the OpenAiDDPhraseGen class to to access and use AI models and natural language processing.
 # Copyright 2024 - Michael Sloane - Agree Technologies
+
+#NOTE:  This file has been supersceeded by DDPhraseGen2.py.  This file is being kept in GitHub for archive purposes only.
 
 #
 # Import needed libraries
@@ -19,7 +19,7 @@ from OpenAiDDPhraseGen import PhraseType as pt
 from OpenAiDDPhraseGen import OpenAiDDPhraseGen
 
 # Define constants
-dateLastUpdated = '2024.08.08 03:26:34'
+dateLastUpdated = '2024.09.03 03:26:34'
 maxRetries = 3
 
 
@@ -53,7 +53,11 @@ def run_description_program(dbDescr, tables, columnData, output_file, phraseType
         if len(failedTables) == 0:
             break
 
-        iterationCount += 1    
+        if should_continue("Continue to the next AI model?"):
+            iterationCount += 1
+        else:
+            print("Operation stopped by user.")
+            break
 
 
     tableData['AlreadyInDataHub'] = 'N'
@@ -100,7 +104,7 @@ def run_friendlyName_program(dbDescr, tables, glossary, output_file, phraseType)
     tablesDf = tables
 
     while iterationCount <= maxRetries:
-        for i in range(len(modelList)):
+        for i in reversed(range(len(modelList))):
             print(f'-->\nRunning iteration {iterationCount} on AI Model {i}: `{modelList[i]}` on {len(failedTables)} tables.')
 
             currentSessionData, currentFailedTables = run_fname_session(pgen, dbDescr, tablesDf, glossary, phraseType, output_file, i)
@@ -116,7 +120,12 @@ def run_friendlyName_program(dbDescr, tables, glossary, output_file, phraseType)
         if len(failedTables) == 0:
             break
 
-        iterationCount += 1    
+        if should_continue("Continue to the next AI model?"):
+            iterationCount += 1
+        else:
+            print("Operation stopped by user.")
+            break
+    
   
     completedSessionData = addFailedTableDataToSessionData(sessionData, failedTables, glossary)
     completedSessionDf = pd.DataFrame(completedSessionData)
@@ -189,6 +198,9 @@ def run_descr_session(pgen, dbDescr, tables, colDataDf, phraseType, transcriptNa
             if ('NETWORK ERROR DUE TO HIGH TRAFFIC' in str(e)) or ('The upstream server is timing out' in str(e)):
                 print(f'   Pausing prompts for 15 seconds...')
                 time.sleep(15)
+            if not should_continue("Continue using this AI model?"):
+                print("Operation stopped by user.")
+                break
 
         time.sleep(2)
 
@@ -315,6 +327,9 @@ def run_fname_session(pgen, dbDescr, tables, glossary, phraseType, transcriptNam
                 if '_' in responseText:
                     print(f'      !Warning: Underscore character detected in response.  Check transcript for Table Name {tableName}.  Cleaning up response.')
                     responseText = responseText.replace("\\_", " ").replace("_", " ")
+                if '-' in responseText:
+                    print(f'      !Warning: Hyphen character detected in response.  Check transcript for Table Name {tableName}.  Cleaning up response.')
+                    responseText = responseText.replace("- ", "")
                 numSuccesses += 1
                 sessionData = addFriendlyNamesToSessionData(sessionData, tableName, colList, responseText)
         except Exception as e:
@@ -324,6 +339,9 @@ def run_fname_session(pgen, dbDescr, tables, glossary, phraseType, transcriptNam
             if ('NETWORK ERROR DUE TO HIGH TRAFFIC' in str(e)) or ('The upstream server is timing out' in str(e)):
                 print(f'   Pausing prompts for 15 seconds...')
                 time.sleep(15)
+            if not should_continue("Continue using this AI model?"):
+                print("Operation stopped by user.")
+                break
 
         time.sleep(2)
 
@@ -354,8 +372,30 @@ def addFriendlyNamesToSessionData(sessionData, tableName, colList, responseText)
 
 
 def splitAndFilterLines(multiLineString):
-    # Split the multi-line string into a list and filter out blank lines
-    lines_list = [line for line in multiLineString.splitlines() if line.strip()]
+    # List of unwanted substrings
+    unwanted_substrings = [
+        "Here is the list of friendly names for each data element name",
+        "Here is the list of friendly names",
+        "here is the list of friendly names",
+        "Here's the list of friendly names",
+        "here's the list of friendly names",
+        "Here are the friendly names",
+        "Here are the list of friendly names",
+        "here are the list of friendly names",
+        "here are their respective friendly names",
+        "friendly names are as follows",
+        "Below is the list of friendly names",
+        "below is the list of friendly names",
+        "The list of friendly names for each data element name is",
+        "The friendly names for the data element names are as follows"
+    ]
+    
+    # Split the multi-line string into a list and filter out blank lines and lines containing any unwanted substrings
+    lines_list = [
+        line for line in multiLineString.splitlines()
+        if line.strip() and not any(unwanted in line for unwanted in unwanted_substrings)
+    ]
+    
     return lines_list
 
 
@@ -498,6 +538,19 @@ def validate_fname_excel_file(filename):
     column_list_data = pd.read_excel(filename, sheet_name='Column Descriptions', engine='openpyxl')
 
     return table_list_data, column_list_data
+
+
+def should_continue(message):
+    user_input = input(message)
+    
+    # Normalize the input to lowercase for comparison
+    user_input = user_input.strip().lower()
+    
+    # Check if the input is "y", "yes" or any substring starting with "yes"
+    if user_input == "y" or user_input.startswith("yes"):
+        return True
+    else:
+        return False
 
 
 ###
