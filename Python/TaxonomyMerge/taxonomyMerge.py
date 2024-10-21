@@ -464,8 +464,8 @@ def main():
     # Define expected arguments
     parser.add_argument('-i', '--initialFile', type=str, help='The initial file to be processed.')
     parser.add_argument('-d', '--domain', type=str, help='The domain parameter.')
-    parser.add_argument('-a', '--application', type=str, help='The application parameter.')
-    parser.add_argument('-m', '--module', type=str, help='The module parameter.')
+    parser.add_argument('-a', '--application', type=str, required = False, default='', help='The application parameter. (Optional)')
+    parser.add_argument('-m', '--module', type=str, required = False, default='', help='The module parameter. (Optional)')
     parser.add_argument('-dd', '--datadictionaryFile', type=str, help='The data dictionary file to be merged.')
 
     # Parse arguments
@@ -485,8 +485,8 @@ def main():
         runInitialMerge(args.initialFile)
 
     elif args.datadictionaryFile:
-        if not all([args.domain, args.application, args.module]):
-            parser.error('When datadictionaryFile is provided, domain, application, and module parameters must also be provided.\n')
+        if not all([args.domain]):
+            parser.error('When datadictionaryFile is provided, domain parameter must also be provided.\n')
         if not args.datadictionaryFile.endswith('.xlsx'):
             parser.error('The data dictionary file must be an .xlsx file.\n')
         if not os.path.isfile(args.datadictionaryFile):
