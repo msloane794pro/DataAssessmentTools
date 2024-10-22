@@ -7,23 +7,46 @@
 #       > python .\TestDataDictionaryTool.py
 
 # Import needed libraries
+
+import subprocess
+import sys
+
+# List of required modules
+required_modules = [
+    'pandas',
+    'argparse',
+    'glob',
+    'textwrap',
+    'warnings',
+    'os.path',
+    'datetime'
+]
+
+# Function to install a module using pip
+def install_module(module_name):
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', module_name])
+
+# Install all required modules
+for module in required_modules:
+    try:
+        __import__(module)
+    except ImportError:
+        print(f"{module} is not installed. Installing now...")
+        install_module(module)
+
 import pandas as pd
 import argparse
 import glob
-import sys
 import textwrap
 import warnings
 import os.path
 import datetime
-from openai import OpenAI
-from tenacity import retry, wait_random_exponential, stop_after_attempt
-import re
 
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 
 # Define constants
-dateLastUpdated = '2024.09.11 03:26:34'
+dateLastUpdated = '2024.10.22 03:26:34'
 
 
 
