@@ -372,17 +372,13 @@ def run_tool():
         worksheet.autofilter(0,0,sheet_vals[name+'_max_rows'],sheet_vals[name+'_max_cols'])
         worksheet.freeze_panes(1,0)
     
-    def addLinks (worksheet, df):
-        idx = 2
-        for table in df['TableName']:
-            worksheet.write_url('A'+str(idx), "internal:'Table "+table+"'!A1:A1", string=table)
-            idx += 1
 
     def addFormatedHeader(worksheet, df, hdr_format):
          # Write the column headers with the defined format.
         for col_num, value in enumerate(df.columns.values):
             worksheet.write(0, col_num, value, hdr_format)
-       
+
+
     def createAboutContent():
         current_time = datetime.datetime.now()
         print(f"Current time: {str(current_time)}")
@@ -391,26 +387,6 @@ def run_tool():
             "DataDictionaryTool version: dateLastUpdated = " + dateLastUpdated]})
         return aboutDf
 
-    def find_duplicate_indices(df, column_name):
-        """
-        Find index values of duplicate entries in a specified column of a DataFrame.
-        
-        Parameters:
-        - df: Pandas DataFrame to check for duplicate values.
-        - column_name: The name of the column to check for duplicates.
-        
-        Returns:
-        - A list of index values where duplicates were found. Empty list if no duplicates.
-        """
-        if column_name not in df.columns:
-            raise ValueError(f"Column '{column_name}' does not exist in the DataFrame.")
-
-        # Find duplicated values in the column
-        duplicate_mask = df.duplicated(subset=[column_name], keep=False)
-        # Get the indices of the duplicated rows
-        duplicate_indices = df.index[duplicate_mask].tolist()
-        
-        return duplicate_indices
 
     def find_duplicate_indices_two_columns(df, column_names):
         """
@@ -436,16 +412,6 @@ def run_tool():
     
         return duplicate_indices
     
-    def get_matching_rows(dataframe, column_name, value):
-        # Filter the DataFrame based on the condition
-        matching_rows_df = dataframe[dataframe[column_name] == value]
-        
-        # Convert the DataFrame to a list of dictionaries
-        # Each dictionary corresponds to a row in the DataFrame
-        matching_rows_list = matching_rows_df.to_dict('records')
-        
-        return matching_rows_list
-    
 
     #Reorder columns in the Glossary.
     new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
@@ -455,39 +421,6 @@ def run_tool():
 
     #Perform analysis on Glossary
     glossary = analyze_glossary(glossary, sensitiveFieldInfo)
-
-    #Add the Notes column
-    # glossary['Notes'] = ''
-    # notesCount = 0
-
-    # # Check to see if a specific column is referenced multiple times for a given table.  If so, this could be a mis-defined or
-    # # weirdly defined Foreign Key situation.  
-    # suspectList = find_duplicate_indices_two_columns(glossary, ["TABLENAME", "COLNAME"])
-    # for index in suspectList:
-    #     glossary.at[index, 'Notes'] = "WARNING: Duplicate entry for Column within a table.  Please review this entry and correct as needed."
-    #     notesCount += 1
-
-    # TODO: This functionality should be performed by a different tool outside the DD tool
-    # # Look for duplicate column names across the glossary, and make notes for things to look at when performing data modeling after
-    # # Bronze level data ingestion.
-    # duplicateColumnNames = find_duplicate_indices(glossary, "COLNAME")
-    # for index in duplicateColumnNames:
-    #     row_data = glossary.iloc[index]
-    #     if not row_data['IsPrimaryKey'] and not row_data['IsForeignKey']:
-    #         matchingPrimaryKey = False
-    #         matchingRows = get_matching_rows(glossary, "COLNAME", row_data['COLNAME'])
-    #         for row_dict in matchingRows:
-    #             if row_dict['IsPrimaryKey']:
-    #                 matchingPrimaryKey = True
-    #                 break
-    #         if matchingPrimaryKey:
-    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here."
-    #         else:
-    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here."
-    #         notesCount += 1
-
-    # if (notesCount > 0):
-    #     print(f'  {notesCount} Notes entries added.  Please review.')
 
 
     # Create Data Dictionary Excel file
@@ -514,7 +447,6 @@ def run_tool():
         'font_color': 'white',
         'border': 1})
 
-
     createFormattedSheet(writer, databaseInfo, 'Info')
     createFormattedSheet(writer, includedTables, 'Tables')
     createFormattedSheet(writer, glossary, 'Glossary')
@@ -522,13 +454,10 @@ def run_tool():
     createFormattedSheet(writer, excludedTables, '_Excluded Tables')
     createFormattedSheet(writer, tableCharacteristics, '_rawTableChars')
     createFormattedSheet(writer, columnStats, '_rawColumnStats')
-
     createFormattedSheet(writer, createAboutContent(), 'About')
 
     writer.close()
     print("Done")
-
-
 
 
 
@@ -644,3 +573,73 @@ if __name__ == '__main__':
         print(f"Data Dictionary Creation tool. Last updated {dateLastUpdated}.")
         print("Use -h or --help to show detailed usage.")
 
+
+    # def addLinks (worksheet, df):
+    #     idx = 2
+    #     for table in df['TableName']:
+    #         worksheet.write_url('A'+str(idx), "internal:'Table "+table+"'!A1:A1", string=table)
+    #         idx += 1
+
+    # def find_duplicate_indices(df, column_name):
+    #     """
+    #     Find index values of duplicate entries in a specified column of a DataFrame.
+        
+    #     Parameters:
+    #     - df: Pandas DataFrame to check for duplicate values.
+    #     - column_name: The name of the column to check for duplicates.
+        
+    #     Returns:
+    #     - A list of index values where duplicates were found. Empty list if no duplicates.
+    #     """
+    #     if column_name not in df.columns:
+    #         raise ValueError(f"Column '{column_name}' does not exist in the DataFrame.")
+
+    #     # Find duplicated values in the column
+    #     duplicate_mask = df.duplicated(subset=[column_name], keep=False)
+    #     # Get the indices of the duplicated rows
+    #     duplicate_indices = df.index[duplicate_mask].tolist()
+        
+    #     return duplicate_indices
+
+    # def get_matching_rows(dataframe, column_name, value):
+    #     # Filter the DataFrame based on the condition
+    #     matching_rows_df = dataframe[dataframe[column_name] == value]
+        
+    #     # Convert the DataFrame to a list of dictionaries
+    #     # Each dictionary corresponds to a row in the DataFrame
+    #     matching_rows_list = matching_rows_df.to_dict('records')
+        
+    #     return matching_rows_list
+    
+    #Add the Notes column
+    # glossary['Notes'] = ''
+    # notesCount = 0
+
+    # # Check to see if a specific column is referenced multiple times for a given table.  If so, this could be a mis-defined or
+    # # weirdly defined Foreign Key situation.  
+    # suspectList = find_duplicate_indices_two_columns(glossary, ["TABLENAME", "COLNAME"])
+    # for index in suspectList:
+    #     glossary.at[index, 'Notes'] = "WARNING: Duplicate entry for Column within a table.  Please review this entry and correct as needed."
+    #     notesCount += 1
+
+    # TODO: This functionality should be performed by a different tool outside the DD tool
+    # # Look for duplicate column names across the glossary, and make notes for things to look at when performing data modeling after
+    # # Bronze level data ingestion.
+    # duplicateColumnNames = find_duplicate_indices(glossary, "COLNAME")
+    # for index in duplicateColumnNames:
+    #     row_data = glossary.iloc[index]
+    #     if not row_data['IsPrimaryKey'] and not row_data['IsForeignKey']:
+    #         matchingPrimaryKey = False
+    #         matchingRows = get_matching_rows(glossary, "COLNAME", row_data['COLNAME'])
+    #         for row_dict in matchingRows:
+    #             if row_dict['IsPrimaryKey']:
+    #                 matchingPrimaryKey = True
+    #                 break
+    #         if matchingPrimaryKey:
+    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Column name matches a defined Primary Key in another table.  Potential Foreign Key here."
+    #         else:
+    #             glossary.at[index, 'Notes'] = "Data Modeling Note: Duplicate Column name found in other tables.  Column is not a PK or FK here."
+    #         notesCount += 1
+
+    # if (notesCount > 0):
+    #     print(f'  {notesCount} Notes entries added.  Please review.')
