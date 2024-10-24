@@ -215,7 +215,56 @@ def run_tool():
             else:
                 print(f"\nERROR: Opening {databaseInfoFile} raised an error:  {str(e)}")
             sys.exit()
+    
 
+    #Reorder columns in the Glossary.
+    new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
+                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
+                     'Friendly Name', 'Description']
+    glossary = reorder_dataframe_columns(glossary, new_col_order)
+
+    #Perform analysis on Glossary
+    glossary = analyze_glossary(glossary, sensitiveFieldInfo)
+
+
+    # Create Data Dictionary Excel file
+    print(f"Writing Data Dictionary Excel file: {dataDictionaryFile}")
+    writer = pd.ExcelWriter(dataDictionaryFile, engine='xlsxwriter')
+    workbook = writer.book
+    sheet_vals = {}
+    dateFormat = workbook.add_format()
+    dateFormat.set_num_format('mm/dd/yy')
+    datetimeFormat = workbook.add_format()
+    datetimeFormat.set_num_format('mm/dd/yy hh:mm')
+    numberFormat = workbook.add_format()
+    numberFormat.set_num_format('###,###,###,##0;-###,###,###,##0')
+    header_format = workbook.add_format({
+        'bg_color': '#0070C0',  
+        'font_color': '#FFFFFF',
+        'bold': True,           
+        'text_wrap': False,
+        'valign': 'top',
+        'align': 'center',
+        'border': 1})
+    redHighlightFormat = workbook.add_format({
+        'bg_color': 'red', 
+        'font_color': 'white',
+        'border': 1})
+
+    createFormattedSheet(writer, databaseInfo, 'Info')
+    createFormattedSheet(writer, includedTables, 'Tables')
+    createFormattedSheet(writer, glossary, 'Glossary')
+    createFormattedSheet(writer, tableList, '_Full Table List')
+    createFormattedSheet(writer, excludedTables, '_Excluded Tables')
+    createFormattedSheet(writer, tableCharacteristics, '_rawTableChars')
+    createFormattedSheet(writer, columnStats, '_rawColumnStats')
+    createFormattedSheet(writer, createAboutContent(), 'About')
+
+    writer.close()
+    print("Done")
+
+
+    # Helper Methods for run_tool() functionality.
 
     def reorder_dataframe_columns(df, column_order):
         """
@@ -411,53 +460,6 @@ def run_tool():
         duplicate_indices = df.index[duplicate_mask].tolist()
     
         return duplicate_indices
-    
-
-    #Reorder columns in the Glossary.
-    new_col_order = ['TABLENAME', 'COLNAME', 'TYPE', 'LEN', 'Min Value', 'Max Value', 'Cardinality', 'Max Length', 
-                     'IncludeInView', 'IsPrimaryKey', 'PK_name', 'PK_ordinal_position', 'IsForeignKey', 'FK_name', 'FK_referenced_table', 'FK_referenced_column', 
-                     'Friendly Name', 'Description']
-    glossary = reorder_dataframe_columns(glossary, new_col_order)
-
-    #Perform analysis on Glossary
-    glossary = analyze_glossary(glossary, sensitiveFieldInfo)
-
-
-    # Create Data Dictionary Excel file
-    print(f"Writing Data Dictionary Excel file: {dataDictionaryFile}")
-    writer = pd.ExcelWriter(dataDictionaryFile, engine='xlsxwriter')
-    workbook = writer.book
-    sheet_vals = {}
-    dateFormat = workbook.add_format()
-    dateFormat.set_num_format('mm/dd/yy')
-    datetimeFormat = workbook.add_format()
-    datetimeFormat.set_num_format('mm/dd/yy hh:mm')
-    numberFormat = workbook.add_format()
-    numberFormat.set_num_format('###,###,###,##0;-###,###,###,##0')
-    header_format = workbook.add_format({
-        'bg_color': '#0070C0',  
-        'font_color': '#FFFFFF',
-        'bold': True,           
-        'text_wrap': False,
-        'valign': 'top',
-        'align': 'center',
-        'border': 1})
-    redHighlightFormat = workbook.add_format({
-        'bg_color': 'red', 
-        'font_color': 'white',
-        'border': 1})
-
-    createFormattedSheet(writer, databaseInfo, 'Info')
-    createFormattedSheet(writer, includedTables, 'Tables')
-    createFormattedSheet(writer, glossary, 'Glossary')
-    createFormattedSheet(writer, tableList, '_Full Table List')
-    createFormattedSheet(writer, excludedTables, '_Excluded Tables')
-    createFormattedSheet(writer, tableCharacteristics, '_rawTableChars')
-    createFormattedSheet(writer, columnStats, '_rawColumnStats')
-    createFormattedSheet(writer, createAboutContent(), 'About')
-
-    writer.close()
-    print("Done")
 
 
 
@@ -473,6 +475,7 @@ if __name__ == '__main__':
                 Additional information:
                     Simple operation: Use database parameter only. 
                         Use this when the input files follow the naming convention
+                            <database>_Info.xlsx                    
                             <database>_ListOfTables.xlsx
                             <database>_TableChars.xlsx      
                             <database>_ColumnStats*.xlsx
@@ -572,6 +575,8 @@ if __name__ == '__main__':
     else:
         print(f"Data Dictionary Creation tool. Last updated {dateLastUpdated}.")
         print("Use -h or --help to show detailed usage.")
+
+
 
 
     # def addLinks (worksheet, df):
