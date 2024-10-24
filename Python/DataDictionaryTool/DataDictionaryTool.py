@@ -6,6 +6,10 @@
 #   Semi-automatic test execution can be performed as follows:
 #       > python .\TestDataDictionaryTool.py
 
+# Define constants
+dateLastUpdated = '2024.10.24 03:26:34'
+
+
 # Import needed libraries
 
 import subprocess
@@ -44,11 +48,6 @@ import datetime
 
 
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
-
-
-
-# Define constants
-dateLastUpdated = '2024.10.22 03:26:34'
 
 
 
@@ -199,7 +198,7 @@ def run_tool():
         print(f"  Reading in database info from: {databaseInfoFile}")
 
         try:
-            sensitiveFieldInfo = None
+            sensitiveFieldInfo = pd.DataFrame()
 
             try:
                 # Try reading the Specific sheet
@@ -262,6 +261,8 @@ def run_tool():
             updated_glossary.loc[mask, 'Description'] = updated_glossary.loc[mask, 'COLNAME'] + " not used."
             updated_glossary.loc[mask, 'Notes'] = "Not used."
 
+        updated_glossary = findSensitiveElements(updated_glossary, sensitiveFieldInfo)
+
         notesCount = updated_glossary[updated_glossary['Notes'] != ''].shape[0]
         if (notesCount > 0):
             print(f'  {notesCount} Notes entries added.  Please review.')
@@ -271,6 +272,19 @@ def run_tool():
         return updated_glossary
 
 
+    def findSensitiveElements(glossary, sensitiveFieldInfo):
+        updated_glossary = glossary.copy()
+        
+        if not sensitiveFieldInfo.empty:
+            print("  Finding Sensitive Elements...")
+           
+            # Merge the glossary with sensitiveFieldInfo to identify rows that need updating
+            merged_df = pd.merge(updated_glossary, sensitiveFieldInfo, on=['TABLENAME', 'COLNAME'], how='left', indicator=True)
+            
+            # Update 'Notes' in updated_glossary where there is a match in sensitiveFieldInfo
+            updated_glossary.loc[merged_df['_merge'] == 'both', 'Notes'] = "DO NOT BRING INTO DATA HUB."
+        
+        return updated_glossary
 
 
     # Table Formatting Methods
