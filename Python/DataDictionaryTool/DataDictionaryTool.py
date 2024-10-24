@@ -42,7 +42,9 @@ import warnings
 import os.path
 import datetime
 
+
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
+
 
 
 # Define constants
@@ -299,6 +301,21 @@ def run_tool():
                                     "format": numberFormat
                                     })
 
+
+    def applyRowConditionalFormatting(work_sheet, highlight_format):
+        # Define the cell range for conditional formatting.
+        # Assuming the data starts at row 1 (A1) and spans columns A:B.
+        # Adjust the range as per your actual data.
+        num_cols = work_sheet.dim_colmax + 1
+        
+        # Apply conditional formatting to the entire row if any cell in the row contains the specified text.
+        for row in range(1, work_sheet.dim_rowmax + 2):
+            work_sheet.conditional_format('{0}{1}:{2}{1}'.format('A', row, chr(65 + num_cols - 1)),
+                                        {'type': 'formula',
+                                        'criteria': 'COUNTIF($S{0}:$S{0},"DO NOT BRING INTO DATA HUB.")'.format(row),
+                                        'format': highlight_format})
+
+
     def createFormattedSheet(theWriter, df, sheetName):
         # store location values from df
         sheet_vals[sheetName+'_max_rows'] = df.shape[0]-1
@@ -323,6 +340,7 @@ def run_tool():
             formatMinMax(theWriter.sheets[sheetName])
         if sheetName == 'Glossary':
             filterAndFreeze(theWriter.sheets[sheetName])
+            applyRowConditionalFormatting(theWriter.sheets[sheetName], redHighlightFormat)
         addFormatedHeader(theWriter.sheets[sheetName], df, header_format)
 
     def filterAndFreeze (worksheet):
@@ -450,7 +468,7 @@ def run_tool():
 
     # Create Data Dictionary Excel file
     print(f"Writing Data Dictionary Excel file: {dataDictionaryFile}")
-    writer = pd.ExcelWriter(dataDictionaryFile)
+    writer = pd.ExcelWriter(dataDictionaryFile, engine='xlsxwriter')
     workbook = writer.book
     sheet_vals = {}
     dateFormat = workbook.add_format()
@@ -467,6 +485,11 @@ def run_tool():
         'valign': 'top',
         'align': 'center',
         'border': 1})
+    redHighlightFormat = workbook.add_format({
+        'bg_color': 'red', 
+        'font_color': 'white',
+        'border': 1})
+
 
     createFormattedSheet(writer, databaseInfo, 'Info')
     createFormattedSheet(writer, includedTables, 'Tables')
