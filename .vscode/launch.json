@@ -3,19 +3,33 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    // "configurations": [
+    //     {
+    //         "name": "Python Debugger: Current File with Arguments",
+    //         "type": "debugpy",
+    //         "request": "launch",
+    //         "program": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DDPhraseGen\\DDPhraseGen2.py",
+    //         "cwd": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DDPhraseGen",
+    //         "console": "integratedTerminal",
+    //         "args": [
+    //             "-i", ".\\SRBT_Descriptions.xlsx",
+    //             "-o", "SRBT",
+    //             "-d", "Delivery Tracking"
+    //         ]
+    //     }
+    // ]
     "configurations": [
         {
             "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
             "request": "launch",
-            "program": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DDPhraseGen\\DDPhraseGen2.py",
-            "cwd": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DDPhraseGen",
+            "program": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DataDictionaryTool\\DataDictionaryTool.py",
+            "cwd": "C:\\Users\\SLOAME\\OneDrive - Idaho National Laboratory\\Projects\\DataAssessmentTools\\Python\\DataDictionaryTool",
             "console": "integratedTerminal",
             "args": [
-                "-i", ".\\SRBT_Descriptions.xlsx",
-                "-o", "SRBT",
-                "-d", "Delivery Tracking"
+                "--database", "EDMS70"
             ]
         }
     ]
+
 }
