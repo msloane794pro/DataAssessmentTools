@@ -199,7 +199,17 @@ def run_tool():
         print(f"  Reading in database info from: {databaseInfoFile}")
 
         try:
-            databaseInfo = pd.read_excel(databaseInfoFile, dtype=str, keep_default_na=False)
+            sensitiveFieldInfo = None
+
+            try:
+                # Try reading the Specific sheet
+                databaseInfo = pd.read_excel(databaseInfoFile, sheet_name="Info", dtype=str, keep_default_na=False)
+                sensitiveFieldInfo = pd.read_excel(databaseInfoFile, sheet_name="Sensitive Fields", dtype=str, keep_default_na=False)
+
+            except ValueError:
+                # If "Info" sheet does not exist, read the first sheet
+                databaseInfo = pd.read_excel(databaseInfoFile, sheet_name=0, dtype=str, keep_default_na=False)
+
         except Exception as e:
             if "Permission denied" in str(e):
                 print(f"\nERROR: {databaseInfoFile} is currently open in Excel.  Please close the file and try again.")
@@ -230,7 +240,7 @@ def run_tool():
             return df[column_order]
 
 
-    def analyze_glossary(glossary):
+    def analyze_glossary(glossary, sensitiveFieldInfo):
         # Make a copy of the glossary to avoid modifying the original one
         print(f'Performing analysis on Glossary data...')
         updated_glossary = glossary.copy()
@@ -430,7 +440,7 @@ def run_tool():
     glossary = reorder_dataframe_columns(glossary, new_col_order)
 
     #Perform analysis on Glossary
-    glossary = analyze_glossary(glossary)
+    glossary = analyze_glossary(glossary, sensitiveFieldInfo)
 
     #Add the Notes column
     # glossary['Notes'] = ''
