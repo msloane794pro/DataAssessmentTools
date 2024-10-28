@@ -203,7 +203,7 @@ def run_tool():
             try:
                 # Try reading the Specific sheet
                 databaseInfo = pd.read_excel(databaseInfoFile, sheet_name="Info", dtype=str, keep_default_na=False)
-                sensitiveFieldInfo = pd.read_excel(databaseInfoFile, sheet_name="Sensitive Fields", dtype=str, keep_default_na=False)
+                sensitiveFieldInfo = pd.read_excel(databaseInfoFile, sheet_name="Sensitive Elements", dtype=str, keep_default_na=False)
 
             except ValueError:
                 # If "Info" sheet does not exist, read the first sheet
