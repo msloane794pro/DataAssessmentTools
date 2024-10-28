@@ -279,14 +279,35 @@ def run_tool():
         
         if not sensitiveFieldInfo.empty:
             print("  Finding Sensitive Elements...")
-           
-            # Merge the glossary with sensitiveFieldInfo to identify rows that need updating
-            merged_df = pd.merge(updated_glossary, sensitiveFieldInfo, on=['TABLENAME', 'COLNAME'], how='left', indicator=True)
-            
-            # Update 'Notes' in updated_glossary where there is a match in sensitiveFieldInfo
-            updated_glossary.loc[merged_df['_merge'] == 'both', 'Notes'] = "DO NOT BRING INTO DATA HUB."
+            if check_sensitive_fields(glossary, sensitiveFieldInfo):
+                # Merge the glossary with sensitiveFieldInfo to identify rows that need updating
+                merged_df = pd.merge(updated_glossary, sensitiveFieldInfo, on=['TABLENAME', 'COLNAME'], how='left', indicator=True)
+                
+                # Update 'Notes' in updated_glossary where there is a match in sensitiveFieldInfo
+                updated_glossary.loc[merged_df['_merge'] == 'both', 'Notes'] = "DO NOT BRING INTO DATA HUB."
+            else:
+                print('!!!Invalid data captured in Sensitive Elements data.  No match(s) in glossary.  Check spelling and capitalization.')
+                sys.exit()
         
         return updated_glossary
+
+
+    def check_sensitive_fields(glossary, sensitiveFieldInfo):
+        # Convert the columns to lowercase to avoid case sensitivity issues
+        glossary['TABLENAME'] = glossary['TABLENAME']
+        glossary['COLNAME'] = glossary['COLNAME']
+        sensitiveFieldInfo['TABLENAME'] = sensitiveFieldInfo['TABLENAME']
+        sensitiveFieldInfo['COLNAME'] = sensitiveFieldInfo['COLNAME']
+        
+        # Create a set of tuples containing (TABLENAME, COLNAME) for glossary
+        glossary_set = set(zip(glossary['TABLENAME'], glossary['COLNAME']))
+        
+        # Check if each (TABLENAME, COLNAME) in sensitiveFieldInfo exists in glossary_set
+        for _, row in sensitiveFieldInfo.iterrows():
+            if (row['TABLENAME'], row['COLNAME']) not in glossary_set:
+                return False
+        
+        return True
 
 
     # Table Formatting Methods
