@@ -190,7 +190,7 @@ AI_MODEL_API_KEY=Insert your API key here
             return response
         except Exception as e:
             print("EXCEPTION: Unable to generate ChatCompletion response")
-            print(f"Exception: {e}")
+            print(f"Message: {e}")
             self.log_transcript_message(sessionId, f"Exception: {e}")
             raise SystemError(e)
 

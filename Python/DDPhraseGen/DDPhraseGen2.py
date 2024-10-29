@@ -13,7 +13,7 @@ from OpenAiDDPhraseGen import PhraseType as pt
 tableNameSubstPattern = '~~~tableName~~~'
 dbDescrSubstPattern = '~~~dbDescrSubst~~~'
 
-
+backup_current_column_descrs = pd.DataFrame()
 
 def check_file_extension(filename):
     if not filename.endswith(".xlsx"):
@@ -232,8 +232,11 @@ def create_unique_filename(desired_filename):
 
 
 def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, output_substring):
+    global backup_current_column_descrs
+    
     print('Input Status:')
     displayColumnResults(input_column_descrs)
+    backup_current_column_descrs = input_column_descrs.copy()
     current_column_descrs = input_column_descrs
     continue_looping = True
 
@@ -252,6 +255,8 @@ def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, o
                     exit()
     except Exception as e:
         print(f'!!!Exception: {e}')
+        current_column_descrs = backup_current_column_descrs
+        print('Using back-up column descriptions object.')
 
     print('Final Results:')
     displayColumnResults(current_column_descrs)
@@ -304,6 +309,7 @@ def iterateAcrossTables(pgen, aiModelIndex, dbDescr, input_table_descrs, input_c
 
 
 def processTableData(pgen, aiModelIndex, dbDescr, table_name, column_descrs):
+    global backup_current_column_descrs
     updated_column_descrs = column_descrs.copy()
     pgen.setModel(aiModelIndex)
 
@@ -329,6 +335,7 @@ def processTableData(pgen, aiModelIndex, dbDescr, table_name, column_descrs):
 
         csvFileName = f'.\\respcsv\\{sessionId}.csv'
         write_stringList_to_file(csvFileName, responseList)
+        backup_current_column_descrs = updated_column_descrs.copy()
         sleep(1)
     else:
         print(f'   Friendly Names already filled in!  Yay!')
@@ -351,6 +358,7 @@ def processTableData(pgen, aiModelIndex, dbDescr, table_name, column_descrs):
 
         csvFileName = f'.\\respcsv\\{sessionId}.csv'
         write_stringList_to_file(csvFileName, responseList)
+        backup_current_column_descrs = updated_column_descrs.copy()
         sleep(1)
     else:
         print(f'   Descriptions already filled in!  Yay!')      
