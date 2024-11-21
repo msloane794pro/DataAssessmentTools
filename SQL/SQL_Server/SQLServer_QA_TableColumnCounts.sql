@@ -1,0 +1,12 @@
+SELECT 
+    COUNT(DISTINCT TABLE_NAME) AS TotalNumberOfTables,
+    COUNT(COLUMN_NAME) AS TotalNumberOfColumns
+FROM 
+    INFORMATION_SCHEMA.COLUMNS
+WHERE 
+    TABLE_NAME IN 
+	(
+		'GC_CSK_STORE_ORDER', 
+		'GC_CSK_STORE_ORDERSTATUS', 
+		'GC_EXWRITER_WS_ORDER_MRCR_MAP'
+	) -- Replace with your actual table names
