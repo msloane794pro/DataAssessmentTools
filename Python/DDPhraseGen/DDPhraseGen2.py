@@ -231,7 +231,7 @@ def create_unique_filename(desired_filename):
     return output_filename
 
 
-def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, output_substring):
+def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, output_substring, reverse):
     global backup_current_column_descrs
     
     print('Input Status:')
@@ -242,7 +242,7 @@ def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, o
 
     try:
         while continue_looping:
-            complete, updated_column_descrs = iterateAcrossAiModels(pgen, db_Description, input_table_descrs, current_column_descrs)
+            complete, updated_column_descrs = iterateAcrossAiModels(pgen, db_Description, input_table_descrs, current_column_descrs, reverse)
             current_column_descrs = updated_column_descrs.copy()
             continue_looping = False
             if not complete:  
@@ -264,9 +264,21 @@ def generateAll(pgen, db_Description, input_table_descrs, input_column_descrs, o
     return
 
 
-def iterateAcrossAiModels(pgen, dbDescr, input_table_descrs, input_column_descrs):
-    aiModels = pgen.getModelNames()
+def iterateAcrossAiModels(pgen, dbDescr, input_table_descrs, input_column_descrs, reverse):
+    aiModelsRaw = pgen.getModelNames()
+    print(f'Raw AI Models available: {aiModelsRaw}')
+    print (f'reverseOrder param = {reverse}')
+
+    if reverse:
+        aiModels = list(reversed(aiModelsRaw))
+        print('Reversed')
+    else:
+        aiModels = aiModelsRaw
+        print('Not Reversed')
+
     print(f'AI Models available: {aiModels}')
+    numAiModels = len(aiModels)
+    print(f'Number of AI Models available: {numAiModels}')
 
     current_column_descrs = input_column_descrs.copy()
 
@@ -626,6 +638,7 @@ def main():
     parser.add_argument("-i", "--input", required=True, help="Input Excel file (with .xlsx extension)")
     parser.add_argument("-o", "--output", required=True, help="Output substring to use to create the output file.")
     parser.add_argument("-d", "--dbDescription", required=True, help="A one word description of the database being described.")
+    parser.add_argument("-r", "--reverseOrder", required=False, help="Reverse order of AI model iteration.  True | False")
     
     args = parser.parse_args()
 
@@ -648,8 +661,17 @@ def main():
     column_descriptions = create_column_descriptions_df(input_file)   
     #print(column_descriptions)
 
+    # Check if reverseOrder is provided and validate its value
+    if args.reverseOrder is not None:
+        if args.reverseOrder.lower() in ['true', 'false']:
+            reverse = args.reverseOrder.lower() == 'true'
+        else:
+            raise ValueError("Invalid value for --reverseOrder. Please provide either True or False.")
+    else:
+        reverse = False
+
     pgen = OpenAiDDPhraseGen()
-    generateAll(pgen, db_Description, table_descriptions, column_descriptions, output_substring)
+    generateAll(pgen, db_Description, table_descriptions, column_descriptions, output_substring, reverse)
     print('Done.')
 
 
