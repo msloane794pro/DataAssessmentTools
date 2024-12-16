@@ -1,0 +1,780 @@
+Create a python script to parse JSON data from a file named calculation_groups.json.
+A sample of the JSON is provided below.
+The JSON contains an array named "calculationgrouptables".
+Some items within the "calculationgrouptables" array contain an array named "measures".
+The python script is to iterate through the "calculationgrouptables" array and then iterate through "measures" array if it is present.
+The python script is to create a record for each item in each "measures" array.
+The parsed output is to be populated into a Pandas dataframe with the following header values: "GroupName", "Measure", "Folder", "Expression"
+The output value for the "GroupName" column is to match the value of the top "name" element of the "calculationgrouptables" array item.
+The output value for the "Measure" column is to match the value of the "name" element of the "measures" array item.
+If the "measures" array item contains an element named "displayFolder", then the output value for the "Folder" column is to match the value of the "displayFolder" element of the "measures" array item.
+The output value for the "Expression" column is to match the value of the "expression" element of the "measures" array item.
+When processing of the JSON file is complete, the dataframe is to be written to an Excel file named: "Calculations.xlsx".
+{
+	"InstanceID": "b0835125-d679-44e9-8f52-82bae210fe45",
+	"calculationgrouptables": [
+		{
+			"name": "Calculations - Cobra Burdened",
+			"lineageTag": "e6a88069-3d30-4961-904b-d0880a55ebe6",
+			"modifiedTime": "2024-12-09T15:13:47.683333",
+			"structureModifiedTime": "2024-11-20T15:56:29.146667",
+			"calculationGroup": {
+				"precedence": 3,
+				"modifiedTime": "2024-11-20T15:56:29.146667"
+			},
+			"columns": [
+				{
+					"type": "rowNumber",
+					"name": "RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61",
+					"dataType": "int64",
+					"isHidden": true,
+					"isUnique": true,
+					"isKey": true,
+					"isNullable": false,
+					"modifiedTime": "2024-11-20T15:56:35.253333",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.253333",
+						"refreshedTime": "2024-11-20T15:56:35.253333"
+					}
+				},
+				{
+					"name": "Name",
+					"dataType": "string",
+					"sourceColumn": "Name",
+					"sortByColumn": "Ordinal",
+					"lineageTag": "f2637b95-67cb-45f7-a5bc-d6bd5ca7e1a1",
+					"summarizeBy": "none",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.253333",
+						"refreshedTime": "2024-11-20T15:56:35.253333"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				},
+				{
+					"name": "Ordinal",
+					"dataType": "int64",
+					"isHidden": true,
+					"sourceColumn": "Ordinal",
+					"lineageTag": "912a8a27-e9a5-42e9-a6f6-448ceac67600",
+					"summarizeBy": "sum",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.253333",
+						"refreshedTime": "2024-11-20T15:56:35.253333"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				}
+			],
+			"partitions": [
+				{
+					"name": "Partition",
+					"mode": "import",
+					"state": "ready",
+					"modifiedTime": "2024-11-20T15:56:35.253333",
+					"refreshedTime": "2024-11-20T15:56:35.253333",
+					"source": {
+						"type": "calculationGroup"
+					}
+				}
+			]
+		},
+		{
+			"name": "Calculations - Cobra Performance",
+			"lineageTag": "40b9d597-decd-40d4-bab0-5a8021355f75",
+			"modifiedTime": "2024-11-20T15:56:29.146667",
+			"structureModifiedTime": "2024-12-16T15:49:14.353333",
+			"calculationGroup": {
+				"precedence": 5,
+				"modifiedTime": "2024-11-20T15:56:29.146667"
+			},
+			"columns": [
+				{
+					"type": "rowNumber",
+					"name": "RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61",
+					"dataType": "int64",
+					"isHidden": true,
+					"isUnique": true,
+					"isKey": true,
+					"isNullable": false,
+					"modifiedTime": "2024-11-20T15:56:35.236667",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					}
+				},
+				{
+					"name": "Name",
+					"dataType": "string",
+					"sourceColumn": "Name",
+					"sortByColumn": "Ordinal",
+					"lineageTag": "340c8a0f-cc5c-4d42-9b65-f2a75ab13403",
+					"summarizeBy": "none",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				},
+				{
+					"name": "Ordinal",
+					"dataType": "int64",
+					"isHidden": true,
+					"sourceColumn": "Ordinal",
+					"lineageTag": "29d37c93-77c4-42b7-b344-c5bbe86633ae",
+					"summarizeBy": "sum",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				}
+			],
+			"partitions": [
+				{
+					"name": "Partition",
+					"mode": "import",
+					"state": "ready",
+					"modifiedTime": "2024-11-20T15:56:35.236667",
+					"refreshedTime": "2024-11-20T15:56:35.236667",
+					"source": {
+						"type": "calculationGroup"
+					}
+				}
+			],
+			"measures": [
+				{
+					"name": "Cost Variance Amount (CV)",
+					"expression": "[Earned Value (CUM_BCWP)] - [Actual Cost (CUM_ACWP)]",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"lineageTag": "bde800f0-b6b3-43af-bc7b-5126d5d5a2c2",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:20:04.64",
+					"structureModifiedTime": "2024-12-09T16:30:32.38",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:20:04.64"
+						}
+					]
+				},
+				{
+					"name": "Cost Variance Hours (CV_HRS)",
+					"expression": "[Earned Hours (CUM_BCWP_HRS)] - [Actual Hours (CUM_ACWP_HRS)]",
+					"formatString": "#,0.00",
+					"lineageTag": "9eb54027-5c3a-4e5d-bec2-421988e86dbe",
+					"dataType": "double",
+					"modifiedTime": "2024-12-13T21:29:20.486667",
+					"structureModifiedTime": "2024-12-09T16:32:59.64"
+				},
+				{
+					"name": "Schedule Variance Hours (SV_HRS)",
+					"expression": "[Earned Hours (CUM_BCWP_HRS)] - [Planned Hours (CUM_BCWS_HRS)]",
+					"formatString": "#,0.00",
+					"lineageTag": "7a211add-1f88-4bb5-9e5f-6f351b3444c9",
+					"dataType": "double",
+					"modifiedTime": "2024-12-11T21:25:10.056667",
+					"structureModifiedTime": "2024-12-09T16:34:03.51"
+				},
+				{
+					"name": "Schedule Variance Amount (SV)",
+					"expression": "[Earned Value (CUM_BCWP)] - [Planned Value (CUM_BCWS)]",
+					"formatString": "\\$#,0;(\\$#,0);\\$#,0",
+					"lineageTag": "97f16ee6-a4d0-493f-9d6d-93bebf726f32",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:20:16.853333",
+					"structureModifiedTime": "2024-12-09T16:35:35.176667"
+				},
+				{
+					"name": "Schedule Performance Index (SPI)",
+					"expression": "DIVIDE([Earned Value (CUM_BCWP)], [Planned Value (CUM_BCWS)],0)",
+					"formatString": "0.00",
+					"lineageTag": "696075fd-fe96-4f7c-b029-41f9d326608b",
+					"dataType": "double",
+					"modifiedTime": "2024-12-11T22:15:17.676667",
+					"structureModifiedTime": "2024-12-09T16:39:24.406667"
+				},
+				{
+					"name": "Cost Performance Index (CPI)",
+					"expression": "DIVIDE([Earned Value (CUM_BCWP)],[Actual Cost (CUM_ACWP)],0)",
+					"lineageTag": "743382f8-c035-4e3a-8d90-2f0cc7c4e852",
+					"dataType": "double",
+					"modifiedTime": "2024-12-12T21:03:02.183333",
+					"structureModifiedTime": "2024-12-09T16:46:09.743333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"isGeneralNumber\":true}",
+							"modifiedTime": "2024-12-09T16:47:53.636667"
+						}
+					]
+				},
+				{
+					"name": "Schedule Variance % (SV%)",
+					"expression": "DIVIDE([Schedule Variance Amount (SV)],[Planned Value (CUM_BCWS)],0) ",
+					"formatString": "0.00%;-0.00%;0.00%",
+					"lineageTag": "d66e01ed-4b0d-4784-bba8-c07ca768d726",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:20:16.976667",
+					"structureModifiedTime": "2024-12-09T16:49:01.436667"
+				},
+				{
+					"name": "Cost Variance % (CV%)",
+					"expression": "DIVIDE([Cost Variance Amount (CV)], [Earned Value (CUM_BCWP)])",
+					"formatString": "0.00%;-0.00%;0.00%",
+					"lineageTag": "95896fba-bbfc-48fd-ba38-224da8305b26",
+					"dataType": "double",
+					"modifiedTime": "2024-12-11T22:15:17.676667",
+					"structureModifiedTime": "2024-12-09T16:50:05.583333"
+				},
+				{
+					"name": "SPI Goal",
+					"expression": "1",
+					"formatString": "0",
+					"lineageTag": "da231fef-75a2-455d-a61b-9914e759daed",
+					"dataType": "int64",
+					"modifiedTime": "2024-12-09T17:00:16.03",
+					"structureModifiedTime": "2024-12-09T17:00:03.276667"
+				},
+				{
+					"name": "CPI Goal",
+					"expression": "1",
+					"formatString": "0",
+					"lineageTag": "a832e745-762c-49c5-bfc3-f38c66bdb115",
+					"dataType": "int64",
+					"modifiedTime": "2024-12-09T17:00:29.303333",
+					"structureModifiedTime": "2024-12-09T17:00:21.31"
+				},
+				{
+					"name": "Variance at Completion",
+					"expression": "[Budget at Complete Amount (BAC)] - [Estimate at Complete Amount (EAC)]",
+					"lineageTag": "50cabbdf-cea5-4afe-8ae5-deca55b53dc1",
+					"dataType": "double",
+					"modifiedTime": "2024-12-11T22:11:24.24",
+					"structureModifiedTime": "2024-12-11T22:10:10.32",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"isGeneralNumber\":true}",
+							"modifiedTime": "2024-12-11T22:11:24.236667"
+						}
+					]
+				},
+				{
+					"name": "Estimate at Complete Amount (EAC)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"lineageTag": "07daeff0-b91c-4688-8807-c5f8ff404515",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:49:49.33",
+					"structureModifiedTime": "2024-12-16T15:47:38.946667",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:47:38.946667"
+						}
+					]
+				},
+				{
+					"name": "Budget at Complete Amount (BAC)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[BUDGET_AT_COMPLETE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"lineageTag": "4a6cfad7-7734-4662-8a39-939d59589a6e",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:49:44.303333",
+					"structureModifiedTime": "2024-12-16T15:48:00.193333"
+				},
+				{
+					"name": "Budget at Complete Hours (BAC_HR)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[BUDGET_AT_COMPLETE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"lineageTag": "71c0202a-c8fa-4e67-9cf2-f31edca8d9bf",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:48:19.723333",
+					"structureModifiedTime": "2024-12-16T15:48:19.546667"
+				},
+				{
+					"name": "Estimate at Complete Hours (EAC_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "0.00",
+					"lineageTag": "9da5f33e-9e27-43d8-81fb-c1c609406968",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:48:36.876667",
+					"structureModifiedTime": "2024-12-16T15:48:29.306667"
+				},
+				{
+					"name": "Estimate at Complete Non-Labor (EAC_NONLAB)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_NON_LABOR_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"lineageTag": "f8cacaad-f240-4ca8-9bdc-7a3f5b0381c4",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:48:59.463333",
+					"structureModifiedTime": "2024-12-16T15:48:59.343333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:48:59.343333"
+						}
+					]
+				},
+				{
+					"name": "Percent Complete",
+					"expression": "[Earned Value (CUM_BCWP)]/ [Budget at Complete Amount (BAC)]",
+					"lineageTag": "1c379b05-3fb9-4766-8063-497e15bce4c6",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:49:56.613333",
+					"structureModifiedTime": "2024-12-16T15:49:14.353333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"isGeneralNumber\":true}",
+							"modifiedTime": "2024-12-16T15:49:14.353333"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Calculations - Cobra Summary",
+			"lineageTag": "d56f0302-335a-4a7d-b69f-628107d46a5b",
+			"modifiedTime": "2024-11-20T15:56:29.146667",
+			"structureModifiedTime": "2024-12-16T15:49:14.353333",
+			"calculationGroup": {
+				"precedence": 4,
+				"modifiedTime": "2024-11-20T15:56:29.146667"
+			},
+			"columns": [
+				{
+					"type": "rowNumber",
+					"name": "RowNumber-2662979B-1795-4F74-8F37-6A1BA8059B61",
+					"dataType": "int64",
+					"isHidden": true,
+					"isUnique": true,
+					"isKey": true,
+					"isNullable": false,
+					"modifiedTime": "2024-11-20T15:56:35.236667",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					}
+				},
+				{
+					"name": "Name",
+					"dataType": "string",
+					"sourceColumn": "Name",
+					"sortByColumn": "Ordinal",
+					"lineageTag": "2013e723-a79d-471b-9cfb-f2d3aa64b083",
+					"summarizeBy": "none",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				},
+				{
+					"name": "Ordinal",
+					"dataType": "int64",
+					"isHidden": true,
+					"sourceColumn": "Ordinal",
+					"lineageTag": "f6c0adde-bf85-427b-828c-f2a6f804ab67",
+					"summarizeBy": "sum",
+					"modifiedTime": "2024-11-26T15:04:11.9",
+					"structureModifiedTime": "2024-11-20T15:56:29.146667",
+					"refreshedTime": "1699-12-31T00:00:00",
+					"attributeHierarchy": {
+						"state": "ready",
+						"modifiedTime": "2024-11-20T15:56:35.236667",
+						"refreshedTime": "2024-11-20T15:56:35.236667"
+					},
+					"annotations": [
+						{
+							"name": "SummarizationSetBy",
+							"value": "Automatic",
+							"modifiedTime": "2024-11-26T15:04:11.896667"
+						}
+					]
+				}
+			],
+			"partitions": [
+				{
+					"name": "Partition",
+					"mode": "import",
+					"state": "ready",
+					"modifiedTime": "2024-11-20T15:56:35.236667",
+					"refreshedTime": "2024-11-20T15:56:35.236667",
+					"source": {
+						"type": "calculationGroup"
+					}
+				}
+			],
+			"measures": [
+				{
+					"name": "Actual Cost Prior Period (PP_ACWP)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_ACTUAL_COST_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "ddd0e403-5869-4154-8a9b-768dc4176fe0",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:27:19.01",
+					"structureModifiedTime": "2024-12-09T15:23:08.983333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:20:56.753333"
+						}
+					]
+				},
+				{
+					"name": "Actual Hours Prior Period (PP_ACWP_HRS)",
+					"expression": "CALCULATE(sum(factCobraActivitySummary[CURRENT_PERIOD_ACTUAL_HRS]),'Date'[Fiscal Month Offset],factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "4aa261ec-daa2-44fc-be7c-95e7f0ab6736",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:27:30.203333",
+					"structureModifiedTime": "2024-12-09T15:25:20.436667"
+				},
+				{
+					"name": "Actual Cost (CUM_ACWP)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[ACTUAL_COST_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "fb93f1e9-9926-4e7b-b422-7bf5aaf6b034",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:21:54.746667",
+					"structureModifiedTime": "2024-12-09T15:26:05.23"
+				},
+				{
+					"name": "Actual Hours (CUM_ACWP_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[ACTUAL_COST_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "59d8df88-1200-4219-a3dd-88c9e9636c99",
+					"dataType": "double",
+					"modifiedTime": "2024-12-13T21:29:20.22",
+					"structureModifiedTime": "2024-12-09T15:28:00.763333"
+				},
+				{
+					"name": "Earned Value (CUM_BCWP)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[EARNED_VALUE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD])",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "bedca5e4-0f7f-4384-8e82-0f9bf060786e",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:22:17.996667",
+					"structureModifiedTime": "2024-12-09T15:32:53.996667",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:22:17.996667"
+						}
+					]
+				},
+				{
+					"name": "Earned Hours (CUM_BCWP_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[EARNED_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "4a6c7889-b006-40ca-84b8-bb0a82a76a2f",
+					"dataType": "double",
+					"modifiedTime": "2024-12-13T21:29:01.436667",
+					"structureModifiedTime": "2024-12-09T15:37:21.53"
+				},
+				{
+					"name": "Earned Value Prior Period (PP_BCWP)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_EARNED_VALUE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "9993315d-6496-4e21-960d-c6a7ac9665d0",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:27:53.823333",
+					"structureModifiedTime": "2024-12-09T15:39:28.753333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:21:06.856667"
+						}
+					]
+				},
+				{
+					"name": "Earned Hours Prior Period (PP_BCWP_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_EARNED_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "81c5b2f8-88e8-4e0b-97e5-4137f2371bb8",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:27:41.923333",
+					"structureModifiedTime": "2024-12-09T15:40:30.01"
+				},
+				{
+					"name": "Planned Value (CUM_BCWS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[BUDGET_TO_DATE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "bf111b97-dd29-4d6a-b629-d94789769299",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:24:18.996667",
+					"structureModifiedTime": "2024-12-09T15:44:55.97",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:24:18.996667"
+						}
+					]
+				},
+				{
+					"name": "Planned Hours (CUM_BCWS_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[BUDGET_TO_DATE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "1dc1882f-cd1d-41ab-b650-9602047c5a01",
+					"dataType": "double",
+					"modifiedTime": "2024-12-13T21:29:01.436667",
+					"structureModifiedTime": "2024-12-09T15:47:11.553333",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"isGeneralNumber\":true}",
+							"modifiedTime": "2024-12-11T21:25:10.07"
+						}
+					]
+				},
+				{
+					"name": "Planned Value Prior Period (PP_BCWS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_BUDGET_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "\\$#,0.00;(\\$#,0.00);\\$#,0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "774e44b7-eaa5-4b92-8868-8fa7a1021ed3",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:28:41.376667",
+					"structureModifiedTime": "2024-12-09T15:48:18.34",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"currencyCulture\":\"en-US\"}",
+							"modifiedTime": "2024-12-16T15:21:36.986667"
+						}
+					]
+				},
+				{
+					"name": "Planned Hours Prior Period (PP_BCWS_HRS)",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_BUDGET_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "0.00",
+					"displayFolder": "Prior Period",
+					"lineageTag": "77259298-5dd2-477f-a1b8-eb38c69b099e",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:28:27.563333",
+					"structureModifiedTime": "2024-12-09T15:49:50.776667"
+				},
+				{
+					"name": "Date Actual Finish (AFD)",
+					"expression": "CALCULATE(MAX(factCobraActivitySummary[ACTUAL_FINISH_DATE]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "Short Date",
+					"displayFolder": "Project lifecycle",
+					"lineageTag": "80e03325-a138-4b0e-96e6-772a58a00b62",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-13T21:37:20.26",
+					"structureModifiedTime": "2024-12-09T15:55:08.35"
+				},
+				{
+					"name": "Date Early Finish (EFD)",
+					"expression": "CALCULATE(MAX(factCobraActivitySummary[EARLY_FINISH_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "92fca187-7a92-49e1-aaf4-c2a66eba0ffd",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:23.456667",
+					"structureModifiedTime": "2024-12-09T15:57:20.52"
+				},
+				{
+					"name": "Date Early Start (ESD)",
+					"expression": "CALCULATE(MIN(factCobraActivitySummary[EARLY_START_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "fa709117-9ae5-4116-a5fd-5b3df2afaebc",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:33.23",
+					"structureModifiedTime": "2024-12-09T15:57:54.226667"
+				},
+				{
+					"name": "Date Actual Start (ASD)",
+					"expression": "CALCULATE(MIN(factCobraActivitySummary[ACTUAL_START_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "c2e67e66-5379-4867-b369-a899a4ee9949",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:32:58.61",
+					"structureModifiedTime": "2024-12-09T15:59:11.556667"
+				},
+				{
+					"name": "Date Proposed Start (PSD)",
+					"expression": "CALCULATE(MIN((factActivitySummary[PLANNED_START_DATE])))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "2d2b80e0-2224-4200-9c42-e5d5e2935945",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:34:07.086667",
+					"structureModifiedTime": "2024-12-09T15:59:58.016667"
+				},
+				{
+					"name": "Date Proposed Finish (PFD)",
+					"expression": "CALCULATE(MAX((factActivitySummary[PLANNED_FINISH_DATE])))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "a84b3dfb-0943-4ed1-8eec-de7ffbd1ca6c",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:59.006667",
+					"structureModifiedTime": "2024-12-09T16:03:33.386667"
+				},
+				{
+					"name": "Date Baseline Start (SSD)",
+					"expression": "CALCULATE(MIN(factCobraActivitySummary[BASELINE_START_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "a42c9f12-8780-4e1b-9782-549c6a9cbed7",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:14.526667",
+					"structureModifiedTime": "2024-12-09T16:04:11.496667"
+				},
+				{
+					"name": "Date Baseline Finish (SFD)",
+					"expression": "CALCULATE(MAX(factCobraActivitySummary[BASELINE_FINISH_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "cae6ef00-04e2-48ea-a707-22eb5467a93d",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:05.816667",
+					"structureModifiedTime": "2024-12-09T16:05:48.706667"
+				},
+				{
+					"name": "Units Remaining",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[REMAINING_UNITS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "11f5d4d8-c2bf-4874-9f20-0065cd486727",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:00:16.24",
+					"structureModifiedTime": "2024-12-09T16:07:19.023333"
+				},
+				{
+					"name": "Units Complete",
+					"expression": "CALCULATE(SUM(factCobraActivitySummary[UNITS_COMPLETE]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)",
+					"formatString": "#,0.00",
+					"displayFolder": "Project Lifecycle",
+					"lineageTag": "27d4579f-fd84-4cbb-ba91-69ee06a01eb0",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:24:27.6",
+					"structureModifiedTime": "2024-12-09T16:08:38.143333"
+				},
+				{
+					"name": "Date Late Finish (LFD)",
+					"expression": "CALCULATE(MAX(factCobraActivitySummary[LATE_FINISH_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "a47f6b07-331d-494d-ba23-f6cf55fa6728",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:42.29",
+					"structureModifiedTime": "2024-12-09T16:11:11.83"
+				},
+				{
+					"name": "Date Late Start (LSD)",
+					"expression": "CALCULATE(MIN(factCobraActivitySummary[LATE_START_DATE]))",
+					"formatString": "Short Date",
+					"displayFolder": "Dates",
+					"lineageTag": "095f408d-c0e9-4409-ac18-be034dcb1a93",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-16T15:33:50.45",
+					"structureModifiedTime": "2024-12-09T16:12:05.623333"
+				},
+				{
+					"name": "Activity Percent Complete",
+					"expression": "CALCULATE( AVERAGE(factCobraActivitySummary[PERCENT_COMPLETE]))",
+					"displayFolder": "Prior Period",
+					"lineageTag": "ccebc22c-8b32-4d0b-854a-3e4e760da173",
+					"dataType": "double",
+					"modifiedTime": "2024-12-16T15:32:45.146667",
+					"structureModifiedTime": "2024-12-09T16:20:58.846667",
+					"annotations": [
+						{
+							"name": "PBI_FormatHint",
+							"value": "{\"isGeneralNumber\":true}",
+							"modifiedTime": "2024-12-09T16:27:44.46"
+						}
+					]
+				},
+				{
+					"name": "Max Current Period",
+					"expression": "CALCULATE(MAX(factCobraActivitySummary[CURRENT_PERIOD_DATE]))",
+					"formatString": "Short Date",
+					"lineageTag": "5cd7a000-771b-4947-b2e6-3559bff039aa",
+					"dataType": "dateTime",
+					"modifiedTime": "2024-12-11T21:05:51.293333",
+					"structureModifiedTime": "2024-12-11T20:57:51.63"
+				}
+			]
+		}
+	]
+}

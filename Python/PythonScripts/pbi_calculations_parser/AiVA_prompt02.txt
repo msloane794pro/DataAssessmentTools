@@ -1,0 +1,20 @@
+Write a python method that creates a new Pandas dataframe based upon an input Pandas dataframe passed in as a parameter.
+The input dataframe has the following columns: GroupName, Measure, Folder, Expression
+The dataframe created will have the following columns: Source, Group, Folder, Time Period, Calculation, Abbrev, Description, Formula
+The dataframe created will have the same number of rows as the input dataframe.
+The value for the "Source" columne is to be as follows:
+1. If the value for the GroupName in the input dataframe contains "Cobra", then the value for Source is to be "Cobra".
+2. If the value for the GroupName in the input dataframe contains "Financial", then the value for Source is to be "Financial".
+3. If the value for the GroupName in the input dataframe contains "P6", then the value for Source is to be "P6".
+The value for the "Group" column is to be the last word of the value of the GroupName in the input dataframe.
+The value for the "Folder" column for the output dataframe is to match the "Folder" value of the input dataframe.
+The value for the "Time Period" columne is to be as follows:
+1. If the value for the Measure in the input dataframe contains "CFY", then the value for Source is to be "CFY".
+2. If the value for the Measure in the input dataframe contains "CP", then the value for Source is to be "CP".
+3. If the value for the Measure in the input dataframe contains "Lifecycle", then the value for Source is to be "Lifecycle".
+4. If the value for the Measure in the input dataframe contains "PP", then the value for Source is to be "PP".
+5. If the value for the Measure in the input dataframe contains "Date", then the value for Source is to be "Date".
+The value for the "Calculation" column is to be the value of the Measure with all text between parentheses removed and also remove the parentheses and any trailing whitespace.
+The value for the "Abbrev" column is to be any text in the Measure value that is between parentheses.
+The value for Description column is to be blank.
+The value for the Formula column is to match the value of Expression value in the input dataframe.
