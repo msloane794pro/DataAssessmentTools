@@ -1,0 +1,136 @@
+Given the DAX expressions below, provide a very simple English description of each expression.
+Wherever possible, reference the abbreviations called out as all-caps and enclosed in parenthesis.
+Use mathmatical symbols in the description wherever possible.
+For example, the expression "[Earned Value (CUM_BCWP)] - [Actual Cost (CUM_ACWP)]" would have the simple description of "CUM_BCWP - CUM_ACWP".
+Return the results in tab separated format with columns 'DAX Expression' and 'Simple Description' for each DAX expression provided.
+Here are the DAX expressions to process:
+[Earned Value (CUM_BCWP)] - [Actual Cost (CUM_ACWP)]
+[Earned Hours (CUM_BCWP_HRS)] - [Actual Hours (CUM_ACWP_HRS)]
+[Earned Hours (CUM_BCWP_HRS)] - [Planned Hours (CUM_BCWS_HRS)]
+[Earned Value (CUM_BCWP)] - [Planned Value (CUM_BCWS)]
+DIVIDE([Earned Value (CUM_BCWP)], [Planned Value (CUM_BCWS)],0)
+DIVIDE([Earned Value (CUM_BCWP)],[Actual Cost (CUM_ACWP)],0)
+DIVIDE([Schedule Variance Amount (SV)],[Planned Value (CUM_BCWS)],0) 
+DIVIDE([Cost Variance Amount (CV)], [Earned Value (CUM_BCWP)])
+1
+1
+[Budget at Complete Amount (BAC)] - [Estimate at Complete Amount (EAC)]
+CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[BUDGET_AT_COMPLETE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[BUDGET_AT_COMPLETE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[ESTIMATE_AT_COMPLETE_NON_LABOR_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+[Earned Value (CUM_BCWP)]/ [Budget at Complete Amount (BAC)]
+CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_ACTUAL_COST_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(sum(factCobraActivitySummary[CURRENT_PERIOD_ACTUAL_HRS]),'Date'[Fiscal Month Offset],factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[ACTUAL_COST_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[ACTUAL_COST_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[EARNED_VALUE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD])
+CALCULATE(SUM(factCobraActivitySummary[EARNED_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_EARNED_VALUE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_EARNED_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[BUDGET_TO_DATE_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[BUDGET_TO_DATE_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_BUDGET_AMT]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[CURRENT_PERIOD_BUDGET_HRS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(MAX(factCobraActivitySummary[ACTUAL_FINISH_DATE]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(MAX(factCobraActivitySummary[EARLY_FINISH_DATE]))
+CALCULATE(MIN(factCobraActivitySummary[EARLY_START_DATE]))
+CALCULATE(MIN(factCobraActivitySummary[ACTUAL_START_DATE]))
+CALCULATE(MIN((factActivitySummary[PLANNED_START_DATE])))
+CALCULATE(MAX((factActivitySummary[PLANNED_FINISH_DATE])))
+CALCULATE(MIN(factCobraActivitySummary[BASELINE_START_DATE]))
+CALCULATE(MAX(factCobraActivitySummary[BASELINE_FINISH_DATE]))
+CALCULATE(SUM(factCobraActivitySummary[REMAINING_UNITS]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(SUM(factCobraActivitySummary[UNITS_COMPLETE]),factCobraActivitySummary[IS_CURRENT_PERIOD]=1)
+CALCULATE(MAX(factCobraActivitySummary[LATE_FINISH_DATE]))
+CALCULATE(MIN(factCobraActivitySummary[LATE_START_DATE]))
+CALCULATE( AVERAGE(factCobraActivitySummary[PERCENT_COMPLETE]))
+CALCULATE(MAX(factCobraActivitySummary[CURRENT_PERIOD_DATE]))
+DIVIDE([Lifecycle Cost Variance Amount (CV)], [Lifecycle Performed Amount (CUM_BCWP)])
+[Lifecycle Performed Amount (CUM_BCWP)] - [Lifecycle Actual Cost (CUM_ACWP)]
+[Lifecycle Performed Amount (CUM_BCWP)] - [Lifecycle Budget Amount (CUM_BCWS)]
+DIVIDE([Lifecycle Schedule Variance (SV)],[Lifecycle Budget Amount (CUM_BCWS)],0) 
+[Lifecycle Performed Hours (CUM_BCWP_HRS)] - [Lifecycle Actual Hours (CUM_ACWP_HRS)]
+[Lifecycle Performed Hours (CUM_BCWP_HRS)] - [Lifecycle Budget Hours (CUM_BCWS_HRS)]
+DIVIDE([Lifecycle Performed Amount (CUM_BCWP)],[Lifecycle Actual Cost (CUM_ACWP)],0)
+DIVIDE([Lifecycle Performed Amount (CUM_BCWP)], [Lifecycle Budget Amount (CUM_BCWS)],0)
+CALCULATE(sum(factBudget[BudgetedAmount]),all('Date'))
+[Lifecycle Budget at Complete (BAC)]/[Lifecycle Cost Performance Index (CPI)] 
+[Lifecycle Actual Cost (CUM_ACWP)]/ [Lifecycle Budget at Complete (BAC)]
+CALCULATE(sum(factActual[Budget Hours (BCWS)]),'Date'[Fiscal Year Offset] = 0)
+CALCULATE(sum(factActual[Budget Amount (BCWS)]))
+CALCULATE(sum(factActual[Budget Amount (BCWS)]),'Date'[Fiscal Month Offset] = 0) 
+CALCULATE(sum(factActual[Budget Hours (BCWS)]))
+CALCULATE(sum(factActual[Budget Hours (BCWS)]),'Date'[Fiscal Month Offset] = 0) 
+CALCULATE(sum(factActual[Budget Hours (BCWS)]),'Date'[Fiscal Year Offset] = 0)
+CALCULATE(sum(factActual[Actual Amount (ACWP)]),'Date'[Fiscal Year Offset] = 0)
+CALCULATE(sum(factActual[Actual Amount (ACWP)]),'Date'[Fiscal Month Offset] = 0)
+CALCULATE(sum(factActual[Actual Amount (ACWP)]))
+CALCULATE(sum(factActual[Actual Hours (ACWP)]),'Date'[Fiscal Month Offset] = 0)
+CALCULATE(sum(factActual[Actual Hours (ACWP)]),'Date'[Fiscal Year] = 0)
+CALCULATE(sum(factActual[Actual Hours (ACWP)]))
+CALCULATE(SUM(factActual[Performed Amount (BCWP)]),'Date'[Fiscal Month Offset] = 0) 
+CALCULATE(SUM(factActual[Performed Amount (BCWP)])) 
+CALCULATE(SUM(factActual[Performed Hours (BCWP)])) 
+CALCULATE(SUM(factActual[Performed Hours (BCWP)]),'Date'[Fiscal Month Offset] = 0) 
+CALCULATE(SUM(factActual[Performed Hours (BCWP)]),'Date'[Fiscal Year Offset]=0) 
+CALCULATE(sum(factActual[Actual Amount (ACWP)]),'Date'[Fiscal Month Offset] = -1)
+CALCULATE(sum(factActual[Actual Hours (ACWP)]),'Date'[Fiscal Month Offset] = -1)
+CALCULATE(sum(factActual[Budget Amount (BCWS)]),'Date'[Fiscal Month Offset] = -1) 
+CALCULATE(sum(factActual[Budget Hours (BCWS)]),'Date'[Fiscal Month Offset] = -1) 
+CALCULATE(SUM(factActual[Performed Amount (BCWP)]),'Date'[Fiscal Month Offset] = -1) 
+CALCULATE(SUM(factActual[Performed Hours (BCWP)]),'Date'[Fiscal Month Offset] = -1) 
+CALCULATE(SUM(factFunding[BudgetAuthorityAmount]))
+CALCULATE(SUM(factFunding[BudgetObligationsAmount]))
+CALCULATE(sum(factFunding[CarryOverAmount]),'Date'[Descriptive Fiscal Year]="Current Fiscal Year")
+CALCULATE(sum(factCommitment[RawCommitmentAmount]))
+CALCULATE(sum(factCommitment[CommitmentAmount])) 
+CALCULATE(DISTINCTCOUNT(factActivitySummary[PROJECT_NK]))
+.05 * [Project Count]
+.037 * [Project Count] 
+CALCULATE(SUM(factActivitySpread[BL_PLANNED_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[AT_COMPLETE_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[AT_COMPLETE_NON_LABOR_AMT]))
+CALCULATE(SUM(factResourceAssignmentSpread[PLANNED_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[PLANNED_NON_LABOR_AMT]))
+CALCULATE(SUM(factResourceAssignmentSpread[REMAINING_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[REMAINING_LATE_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[REMAINING_LATE_NON_LABOR_AMT]))
+CALCULATE(SUM(factResourceAssignmentSpread[REMAINING_NON_LABOR_AMT]))
+CALCULATE(SUM(factResourceAssignmentSpread[STAFFED_REMAINING_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[STAFFED_REMAINING_LATE_LABOR_HRS]))
+CALCULATE(SUM(factResourceAssignmentSpread[STAFFED_REMAINING_LATE_NON_LABOR_AMT]))
+CALCULATE(SUM(factResourceAssignmentSpread[STAFFED_REMAINING_NON_LABOR_AMT]))
+CALCULATE(SUM(factActivitySpread[BL_PLANNED_NON_LABOR_AMT]))
+CALCULATE(SUM(factActivitySpread[EARNED_VALUE_LABOR_HRS]))
+CALCULATE(SUM(factActivitySpread[ESTIMATE_AT_COMPLETE_LABOR_HRS]))
+CALCULATE(SUM(factActivitySpread[ESTIMATE_TO_COMPLETE_LABOR_HRS]))
+CALCULATE(SUM(factActivitySpread[PLANNED_VALUE_LABOR_HRS]))
+CALCULATE(MIN(factResourceAssignmentSpread[PLANNED_DATE]))
+CALCULATE(MAX(factResourceAssignmentSpread[PLANNED_DATE]))
+CALCULATE(MAX(factActivitySummary[ACTUAL_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[ACTUAL_START_DATE]))
+[Actual Finish Date] - [Actual Start Date]
+CALCULATE(MAX(factActivitySummary[BL_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[BL_START_DATE]))
+CALCULATE(MAX(factActivitySummary[BL_LATE_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[BL_LATE_START_DATE]))
+CALCULATE(SUM(factActivitySummary[BUDGET_AT_COMPLETE]))
+CALCULATE(MAX(factActivitySummary[EARLY_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[EARLY_START_DATE]))
+CALCULATE(SUM(factActivitySummary[ESTIMATE_TO_COMPLETE]))
+CALCULATE(MAX(factActivitySummary[EXPECTED_FINISH_DATE]))
+CALCULATE(MAX(factActivitySummary[FINISH_DATE]))
+CALCULATE(MAX(factActivitySummary[LAST_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[LAST_START_DATE]))
+CALCULATE(MAX(factActivitySummary[PLANNED_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[PLANNED_START_DATE]))
+CALCULATE(MAX(factActivitySummary[REMAINING_EARLY_FINISH_DATE]))
+CALCULATE(MIN(factActivitySummary[REMAINING_EARLY_START_DATE]))
+CALCULATE(MIN(factActivitySummary[START_DATE]))
+[Baseline Finish Date] - [Baseline Start Date]
+[Planned Finish Date] - [Planned Start Date]
+[Actual Duration] - [Planned Duration]
+[Actual Finish Date] - [Planned Finish Date]
+[Actual Start Date] - [Planned Start Date]
