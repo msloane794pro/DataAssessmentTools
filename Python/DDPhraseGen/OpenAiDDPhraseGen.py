@@ -6,6 +6,7 @@
 # Import needed libraries
 import sys
 import configparser
+from time import sleep
 from openai import OpenAI
 import uuid
 from enum import Enum
@@ -272,12 +273,19 @@ AI_MODEL_API_KEY=Insert your API key here
             os.makedirs(directory_name)
         
         # Define the file name
-        file_name = f'.\\{directory_name}\\{transcript_id}_transcript.txt'
+        file_name = f'.\\{directory_name}\\{transcript_id}.txt'
+
 
         # Check if the file exists, if not create it
         if not os.path.isfile(file_name):
+            #print(f'......Creating new transcript file {file_name}')  
             with open(file_name, 'w') as f:
-                pass
+                #print(f'......Now close the file {file_name}')  
+                pass # Just create the file and close it
+            # if not os.path.isfile(file_name):
+            #     print(f'!!!ERROR Failed to create new transcript {file_name}')
+            # else:
+            #     print(f'......Successfully created new transcript {file_name}')  
 
         # Get the current timestamp
         timestamp = datetime.datetime.now().strftime("%Y%m%d:%H%M%S.%f")
@@ -286,6 +294,7 @@ AI_MODEL_API_KEY=Insert your API key here
         log_entry = f"{timestamp} : {message}"
 
         # Append the log entry to the file
+        #print(f'......Writing to transcript {file_name}')
         with open(file_name, 'a') as f:
             f.write(f"{log_entry}\n\n")
 
