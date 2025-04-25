@@ -1,0 +1,1 @@
+In the following requests, I will provide you with the name of a fictional location and some key components of its lore.  I need you to rewrite the pledge of allegiance so that it is tailored to the lore of that land.  Please provide your responses in pipe separated format with headers | Location | Pledge |.
